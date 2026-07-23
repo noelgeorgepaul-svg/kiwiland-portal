@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="en"><head>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>Kiwiland Trades - Pricing &amp; Order Dispatch Portal</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
@@ -25,57 +26,68 @@
             .category-header { background-color: #f1f5f9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .brand-header-print { background-color: var(--logo-yellow) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
+
+        /* Mobile touch improvements */
+        input, select, button {
+            touch-action: manipulation;
+        }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-900 font-sans min-h-screen">
+<body class="bg-slate-100 text-slate-900 font-sans min-h-screen pb-12">
 
     <!-- PORTAL DASHBOARD -->
-    <div id="dashboard" class="no-print max-w-7xl mx-auto p-4 md:p-8">
+    <div id="dashboard" class="no-print max-w-7xl mx-auto p-2 sm:p-4 md:p-8">
         
         <!-- App Header Banner -->
-        <header class="brand-bg-green text-white rounded-2xl p-6 mb-6 shadow-md flex flex-col lg:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-4">
-                <div class="bg-amber-300 p-2.5 rounded-xl text-emerald-900 font-black text-xl shadow-xs">
+        <header class="brand-bg-green text-white rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 shadow-md flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
+            <div class="flex items-center gap-3 sm:gap-4">
+                <div class="bg-amber-300 p-2 sm:p-2.5 rounded-xl text-emerald-900 font-black text-lg sm:text-xl shadow-xs">
                     🥝 KT
                 </div>
                 <div>
-                    <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Kiwiland Trades Ltd</h1>
-                    <p class="text-emerald-100 text-sm mt-0.5">sales@kiwilandtrades.com  •  021 072 9442 / 021 024 99914</p>
+                    <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight">Kiwiland Trades Ltd</h1>
+                    <p class="text-emerald-100 text-xs sm:text-sm mt-0.5">sales@kiwilandtrades.com • 021 072 9442 / 021 024 99914</p>
                 </div>
             </div>
             
             <!-- Dashboard Controls -->
-            <div class="flex flex-wrap items-center gap-2">
-                <button onclick="addNewProduct()" class="bg-emerald-800 hover:bg-emerald-900 text-emerald-50 border border-emerald-700 font-bold px-3 py-2 rounded-xl text-xs md:text-sm transition cursor-pointer">
+            <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
+                <button onclick="toggleOrderMode()" id="orderModeBtn" class="col-span-2 sm:col-span-1 bg-amber-300 hover:bg-amber-400 text-emerald-950 font-black px-3 py-2.5 rounded-xl text-xs sm:text-sm shadow-md transition cursor-pointer flex items-center justify-center gap-1.5">
+                    🛒 Create New Order
+                </button>
+                <button onclick="addNewProduct()" class="bg-emerald-800 hover:bg-emerald-900 text-emerald-50 border border-emerald-700 font-bold px-3 py-2 rounded-xl text-xs sm:text-sm transition cursor-pointer">
                     + Add Product
                 </button>
-                <button onclick="generatePDF('catalog')" class="bg-amber-400 hover:bg-amber-500 text-emerald-950 font-extrabold px-3 py-2 rounded-xl text-xs md:text-sm shadow-sm transition cursor-pointer">
+                <button onclick="generatePDF('catalog')" class="bg-amber-400 hover:bg-amber-500 text-emerald-950 font-extrabold px-3 py-2 rounded-xl text-xs sm:text-sm shadow-sm transition cursor-pointer">
                     📄 Print Catalogue
                 </button>
-                <button onclick="generatePDF('dispatch')" class="bg-white hover:bg-slate-100 text-emerald-900 font-extrabold px-3 py-2 rounded-xl text-xs md:text-sm shadow-md transition flex items-center gap-1.5 cursor-pointer">
-                    🚚 Print Dispatch Slip
+                <button onclick="generatePDF('dispatch')" class="bg-white hover:bg-slate-100 text-emerald-900 font-extrabold px-3 py-2 rounded-xl text-xs sm:text-sm shadow-md transition cursor-pointer flex items-center justify-center gap-1">
+                    🚚 Print Dispatch
+                </button>
+                <button onclick="generatePDF('proforma')" id="proformaBtn" class="hidden bg-emerald-900 hover:bg-emerald-950 text-white font-extrabold px-3 py-2 rounded-xl text-xs sm:text-sm shadow-md transition cursor-pointer flex items-center justify-center gap-1">
+                    🧾 Print Proforma
                 </button>
                 
                 <div class="h-6 w-px bg-emerald-700 mx-1 hidden sm:block"></div>
 
-                <button id="saveCloudBtn" onclick="syncToCloud()" class="bg-amber-500 hover:bg-amber-600 text-emerald-950 font-black px-4 py-2 rounded-xl text-xs md:text-sm transition shadow-md cursor-pointer">
+                <button id="saveCloudBtn" onclick="syncToCloud()" class="col-span-2 sm:col-span-1 bg-amber-500 hover:bg-amber-600 text-emerald-950 font-black px-4 py-2.5 rounded-xl text-xs sm:text-sm transition shadow-md cursor-pointer text-center">
                     💾 Save to Google Sheets
                 </button>
             </div>
         </header>
 
         <!-- Dynamic Group Manager & Client Inputs -->
-        <div class="bg-white rounded-xl p-5 mb-6 shadow-xs border border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl p-4 sm:p-5 mb-4 sm:mb-6 shadow-xs border border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div class="space-y-1.5">
                 <label for="clientNameInput" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Client / Account Name (Optional)</label>
-                <input type="text" id="clientNameInput" placeholder="Type customer name for dispatch..." class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-600 w-full font-semibold text-slate-800">
+                <input type="text" id="clientNameInput" placeholder="Type customer name for dispatch/proforma..." class="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 sm:py-2.5 text-sm focus:outline-none focus:border-emerald-600 w-full font-semibold text-slate-800">
             </div>
 
             <div class="space-y-1.5">
                 <label for="newCategoryInput" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Create New Category Group</label>
                 <div class="flex gap-2">
-                    <input type="text" id="newCategoryInput" placeholder="Enter new group title..." class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-600 w-full font-medium">
-                    <button onclick="addCustomCategory()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-4 py-2.5 rounded-xl transition cursor-pointer whitespace-nowrap">
+                    <input type="text" id="newCategoryInput" placeholder="Enter new group title..." class="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 sm:py-2.5 text-sm focus:outline-none focus:border-emerald-600 w-full font-medium">
+                    <button onclick="addCustomCategory()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-4 py-2 rounded-xl transition cursor-pointer whitespace-nowrap">
                         Create Group
                     </button>
                 </div>
@@ -85,18 +97,20 @@
         <!-- Master Working Inventory Table -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+                <table class="w-full text-left border-collapse min-w-[700px]">
                     <thead>
-                        <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-500">
-                            <th class="py-4 px-3 w-10 text-center">Move</th>
-                            <th class="py-4 px-2 w-10 text-center">Promo</th>
-                            <th class="py-4 px-4">Product Description</th>
-                            <th class="py-4 px-4 w-44">Category Group</th>
-                            <th class="py-4 px-4 w-24 text-center">Weight</th>
-                            <th class="py-4 px-4 w-24 text-center">Carton Qty</th>
-                            <th class="py-4 px-4 w-32">Price (Incl. GST)</th>
-                            <th class="py-4 px-4 w-24 text-center bg-emerald-50 text-emerald-800">Order Qty</th>
-                            <th class="py-4 px-4 w-12 text-center">Drop</th>
+                        <tr id="tableHeaderRow" class="bg-slate-50 border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-500">
+                            <th class="py-3 sm:py-4 px-2 sm:px-3 w-10 text-center">Move</th>
+                            <th class="py-3 sm:py-4 px-2 w-10 text-center">Promo</th>
+                            <th class="py-3 sm:py-4 px-3 sm:px-4">Product Description</th>
+                            <th class="py-3 sm:py-4 px-3 sm:px-4 w-36 sm:w-44">Category Group</th>
+                            <th class="py-3 sm:py-4 px-2 sm:px-4 w-20 sm:w-24 text-center">Weight</th>
+                            <th class="py-3 sm:py-4 px-2 sm:px-4 w-20 sm:w-24 text-center">Carton Qty</th>
+                            <th class="py-3 sm:py-4 px-3 sm:px-4 w-28 sm:w-32">Price (Incl. GST)</th>
+                            <th class="order-col hidden py-3 sm:py-4 px-2 w-20 text-center bg-amber-100/70 text-amber-950 font-black">Disc %</th>
+                            <th class="order-col hidden py-3 sm:py-4 px-3 w-28 text-center bg-amber-50 text-amber-900 font-black">Net Price</th>
+                            <th class="order-col hidden py-3 sm:py-4 px-3 w-24 text-center bg-emerald-100 text-emerald-950 font-black">Order Qty</th>
+                            <th class="py-3 sm:py-4 px-2 sm:px-4 w-10 text-center">Drop</th>
                         </tr>
                     </thead>
                     <tbody id="productTableBody" class="divide-y divide-slate-100 text-sm"></tbody>
@@ -106,8 +120,8 @@
     </div>
 
     <!-- PRINT VIEW TEMPLATE -->
-    <div id="printContainer" class="hidden max-w-[210mm] mx-auto bg-white my-6 shadow-2xl border border-slate-300 print-page rounded-lg overflow-hidden">
-        <div class="brand-bg-yellow brand-header-print px-10 py-6 flex justify-between items-center border-b-4 border-emerald-800">
+    <div id="printContainer" class="hidden max-w-[210mm] mx-auto bg-white my-2 sm:my-6 shadow-2xl border border-slate-300 print-page rounded-lg overflow-hidden">
+        <div class="brand-bg-yellow brand-header-print px-6 sm:px-10 py-5 sm:py-6 flex justify-between items-center border-b-4 border-emerald-800">
             <div class="flex items-center gap-4">
                 <div>
                     <h2 class="text-2xl font-black tracking-tight text-emerald-900 leading-none">KIWILAND TRADES</h2>
@@ -122,9 +136,9 @@
             </div>
         </div>
 
-        <div id="printContent" class="p-10 space-y-6"></div>
+        <div id="printContent" class="p-6 sm:p-10 space-y-6"></div>
 
-        <footer class="bg-slate-50 border-t border-slate-200 py-6 px-10 text-center text-xs font-medium text-slate-500">
+        <footer class="bg-slate-50 border-t border-slate-200 py-6 px-6 sm:px-10 text-center text-xs font-medium text-slate-500">
             <p class="font-bold text-slate-700 mb-0.5">Kiwiland Trades Ltd — Premium Food Imports</p>
             <p class="text-slate-600 font-semibold mb-2">📩 sales@kiwilandtrades.com  |  📞 021 072 9442 / 021 024 99914</p>
             <p class="text-slate-400 text-[11px]" id="footerNotice">Prices are subject to alignment on order confirmation.</p>
@@ -133,6 +147,8 @@
 
     <script>
         const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbwJZiIegQuXIuKttHNfEUwxzLFUQjJZthEB6NgOpcLF_hnyXTJBu__Njr0nPr050Ug3/exec";
+
+        let isOrderMode = false;
 
         let allCategories = [
             "FROZEN FAMILY PACK",
@@ -146,88 +162,118 @@
         let categoryVisibility = {};
         allCategories.forEach(cat => { categoryVisibility[cat] = true; });
 
-        // Backup default products list
+        // Default products array with discount column support
         let defaultProducts = [
-            { id: 1, name: "Frozen Restaurant Porotta 1Kg", category: "FROZEN FAMILY PACK", weight: "1 kg", cartonQty: 16, price: 5.95, orderQty: 0, isSpecial: true },
-            { id: 2, name: "Frozen Restaurant Porotta 1.5Kg KD", category: "FROZEN FAMILY PACK", weight: "1.5 kg", cartonQty: 12, price: 8.8, orderQty: 0, isSpecial: false },
-            { id: 3, name: "Frozen Restaurant Porotta 2Kg", category: "FROZEN FAMILY PACK", weight: "2 kg", cartonQty: 8, price: 11.7, orderQty: 0, isSpecial: false },
-            { id: 4, name: "Frozen Steamed Banana 1Kg", category: "FROZEN FAMILY PACK", weight: "1kg", cartonQty: 14, price: 8.00, orderQty: 0, isSpecial: false },
-            { id: 5, name: "Frozen Iidyappam White", category: "FROZEN FAMILY PACK", weight: "1kg", cartonQty: 8, price: 5.95, orderQty: 0, isSpecial: false },
-            { id: 6, name: "Frozen Banana Fry 1Kg", category: "FROZEN FAMILY PACK", weight: "1kg", cartonQty: 12, price: 8.95, orderQty: 0, isSpecial: false },
-            { id: 7, name: "Frozen Ripe Plantain Banana (Ethapazham)", category: "FROZEN FAMILY PACK", weight: "1kg", cartonQty: 14, price: 5.95, orderQty: 0, isSpecial: false },
-            { id: 8, name: "Frozen Green Plantain Sliced", category: "FROZEN FAMILY PACK", weight: "1kg", cartonQty: 12, price: 6.95, orderQty: 0, isSpecial: false },
-            { id: 9, name: "Frozen Chappathi 908g", category: "FROZEN FAMILY PACK", weight: "908g", cartonQty: 12, price: 5.95, orderQty: 0, isSpecial: false },
-            { id: 10, name: "Frozen Tapioca Sliced 2kg", category: "FROZEN FAMILY PACK", weight: "2kg", cartonQty: 8, price: 5.99, orderQty: 0, isSpecial: false },
-            { id: 11, name: "Frozen Chakka Puzhukk Tender Mango", category: "FROZEN SNACKS", weight: "350g", cartonQty: 18, price: 3.95, orderQty: 0, isSpecial: false },
-            { id: 12, name: "Frozen Tapioca With Chutney", category: "FROZEN SNACKS", weight: "350g", cartonQty: 18, price: 2.99, orderQty: 0, isSpecial: true },
-            { id: 13, name: "Frozen Elayada Jaggery", category: "FROZEN SNACKS", weight: "350g", cartonQty: 16, price: 3.95, orderQty: 0, isSpecial: false },
-            { id: 14, name: "Frozen Bonda", category: "FROZEN SNACKS", weight: "350g", cartonQty: 16, price: 3.95, orderQty: 0, isSpecial: false },
-            { id: 15, name: "Frozen Laddu", category: "FROZEN SNACKS", weight: "350g", cartonQty: 16, price: 3.95, orderQty: 0, isSpecial: false },
-            { id: 16, name: "Frozebn Jilebi", category: "FROZEN SNACKS", weight: "250g", cartonQty: 16, price: 3.95, orderQty: 0, isSpecial: false },
-            { id: 17, name: "Frozen Chakka Ada", category: "FROZEN SNACKS", weight: "350g", cartonQty: 16, price: 3.95, orderQty: 0, isSpecial: false },
-            { id: 18, name: "Frozen Ripe Jackfruit", category: "FROZEN SNACKS", weight: "300g", cartonQty: 18, price: 3.50, orderQty: 0, isSpecial: false },
-            { id: 19, name: "Frozen Veg Baby Samosa (New Item)", category: "FROZEN SNACKS", weight: "350g", cartonQty: 16, price: 3.50, orderQty: 0, isSpecial: true },
-            { id: 20, name: "Frozen Vattayappam", category: "FROZEN SNACKS", weight: "350g", cartonQty: 16, price: 3.95, orderQty: 0, isSpecial: false },
-            { id: 21, name: "Frozen Chakka Puttu", category: "FROZEN SNACKS", weight: "400g", cartonQty: 15, price: 4.50, orderQty: 0, isSpecial: false },
-            { id: 22, name: "Frzoen Malabar Porotta Roll (New Item)", category: "FROZEN SNACKS", weight: "600g", cartonQty: 12, price: 3.95, orderQty: 0, isSpecial: false },
-            { id: 23, name: "Frozen Cut Coconut", category: "INCOMING MID JULY", weight: "400g", cartonQty: 32, price: 3.99, orderQty: 0, isSpecial: false },
-            { id: 24, name: "Frozen Green Mango Cut", category: "FROZEN VEGES", weight: "400g", cartonQty: 18, price: 3.50, orderQty: 0, isSpecial: false },
-            { id: 25, name: "Frozen Grated Coconut KD", category: "FROZEN VEGES", weight: "400g", cartonQty: 32, price: 3.99, orderQty: 0, isSpecial: false },
-            { id: 26, name: "Frozen Aviyal Mix", category: "FROZEN VEGES", weight: "400g", cartonQty: 18, price: 3.50, orderQty: 0, isSpecial: false },
-            { id: 27, name: "Frozen Veg Stew Mix with Free Cauliflower 400g", category: "FROZEN VEGES", weight: "400g", cartonQty: 18, price: 3.50, orderQty: 0, isSpecial: true },
-            { id: 28, name: "Frozen Shallots (Red Onions) KD", category: "FROZEN VEGES", weight: "400g", cartonQty: 12, price: 3.50, orderQty: 0, isSpecial: false },
-            { id: 29, name: "Frozen Green Jackfruit Sliced KD", category: "FROZEN VEGES", weight: "400g", cartonQty: 12, price: 3.95, orderQty: 0, isSpecial: false },
-            { id: 30, name: "Frozen Mambazha Pulisheri", category: "FROZEN CURRIES & COMBOS", weight: "454g", cartonQty: 18, price: 4.10, orderQty: 0, isSpecial: true },
-            { id: 31, name: "Frozen Angamaly Manga Curry", category: "FROZEN CURRIES & COMBOS", weight: "350g", cartonQty: 18, price: 3.80, orderQty: 0, isSpecial: false },
-            { id: 32, name: "Frozen Kanji Combo", category: "FROZEN CURRIES & COMBOS", weight: "750g", cartonQty: 30, price: 5.20, orderQty: 0, isSpecial: false },
-            { id: 33, name: "Frozen Palappam with Veg Stew", category: "FROZEN CURRIES & COMBOS", weight: "454g", cartonQty: 15, price: 3.95, orderQty: 0, isSpecial: false },
-            { id: 34, name: "Frozen Pathiri with Veg Stew", category: "FROZEN CURRIES & COMBOS", weight: "454g", cartonQty: 15, price: 3.95, orderQty: 0, isSpecial: false },
-            { id: 35, name: "Frozen Puttu with Kadala", category: "FROZEN CURRIES & COMBOS", weight: "599g", cartonQty: 15, price: 3.95, orderQty: 0, isSpecial: false },
-            { id: 36, name: "Tender Mango Chutney", category: "FROZEN CURRIES & COMBOS", weight: "200g", cartonQty: 50, price: 2.95, orderQty: 0, isSpecial: false },
-            { id: 37, name: "Tender Jackfruit Chutney", category: "FROZEN CURRIES & COMBOS", weight: "200g", cartonQty: 50, price: 2.95, orderQty: 0, isSpecial: false },
-            { id: 38, name: "Vaduka Puli Lemon Chutney", category: "FROZEN CURRIES & COMBOS", weight: "200g", cartonQty: 50, price: 2.95, orderQty: 0, isSpecial: false },
-            { id: 39, name: "Inchi Puli", category: "FROZEN CURRIES & COMBOS", weight: "200g", cartonQty: 50, price: 2.95, orderQty: 0, isSpecial: true },
-            { id: 40, name: "Banana Chips 300g Bottle KD", category: "JACME DRY PRODUCTS", weight: "300g", cartonQty: 24, price: 4.20, orderQty: 0, isSpecial: false },
-            { id: 41, name: "Vaccum Fried Ripe Banana Chips", category: "INCOMING MID JULY", weight: "100g", cartonQty: 30, price: 2.99, orderQty: 0, isSpecial: false },
-            { id: 42, name: "Vaccum Fried Ripe Jackfruit Chips", category: "INCOMING MID JULY", weight: "100g", cartonQty: 25, price: 3.60, orderQty: 0, isSpecial: false },
-            { id: 43, name: "Ooty Varkey", category: "INCOMING MID JULY", weight: "350g", cartonQty: 12, price: 3.85, orderQty: 0, isSpecial: false },
-            { id: 44, name: "Pakkavada", category: "INCOMING MID JULY", weight: "200g", cartonQty: 20, price: 2.30, orderQty: 0, isSpecial: false },
-            { id: 45, name: "Ripe Banana Chips Long Cut", category: "INCOMING MID JULY", weight: "150g", cartonQty: 20, price: 2.60, orderQty: 0, isSpecial: false },
-            { id: 46, name: "Banana Chips Long Cut", category: "INCOMING MID JULY", weight: "200g", cartonQty: 24, price: 2.95, orderQty: 0, isSpecial: false },
-            { id: 47, name: "Banana Chips (Salty) 300G", category: "INCOMING MID JULY", weight: "300g", cartonQty: 24, price: 4.20, orderQty: 0, isSpecial: false },
-            { id: 48, name: "Banana Chips (Salty) 800G", category: "INCOMING MID JULY", weight: "800g", cartonQty: 8, price: 10.50, orderQty: 0, isSpecial: false },
-            { id: 49, name: "Payyoli Mixture", category: "INCOMING MID JULY", weight: "400g", cartonQty: 25, price: 4.99, orderQty: 0, isSpecial: false },
-            { id: 50, name: "Madhura Seva", category: "INCOMING MID JULY", weight: "300g", cartonQty: 25, price: 3.40, orderQty: 0, isSpecial: false },
-            { id: 51, name: "Tomato Murukku", category: "INCOMING MID JULY", weight: "200g", cartonQty: 25, price: 3.30, orderQty: 0, isSpecial: false },
-            { id: 52, name: "Sarkaravaratty", category: "INCOMING MID JULY", weight: "200g", cartonQty: 25, price: 2.95, orderQty: 0, isSpecial: false },
-            { id: 53, name: "Achappam", category: "INCOMING MID JULY", weight: "200g", cartonQty: 30, price: 3.50, orderQty: 0, isSpecial: false },
-            { id: 54, name: "Rice Muruku", category: "INCOMING MID JULY", weight: "200g", cartonQty: 25, price: 2.95, orderQty: 0, isSpecial: false },
-            { id: 55, name: "Baby Murukku", category: "INCOMING MID JULY", weight: "200g", cartonQty: 25, price: 2.95, orderQty: 0, isSpecial: false },
-            { id: 56, name: "Frozen Pavakka Thoran", category: "INCOMING MID JULY", weight: "350g", cartonQty: 18, price: 3.50, orderQty: 0, isSpecial: false },
-            { id: 57, name: "Frozen Idichakka Thoran", category: "INCOMING MID JULY", weight: "350g", cartonQty: 18, price: 3.50, orderQty: 0, isSpecial: false },
-            { id: 58, name: "Frozen Breadfruit", category: "INCOMING MID JULY", weight: "400g", cartonQty: 18, price: 3.95, orderQty: 0, isSpecial: false },
-            { id: 59, name: "Frozen Fried Rice with Gopi Manchurian", category: "INCOMING MID JULY", weight: "454g", cartonQty: 15, price: 3.95, orderQty: 0, isSpecial: false },
-            { id: 60, name: "Frozen Koorka Mezhukkupuratty", category: "INCOMING MID JULY", weight: "350g", cartonQty: 18, price: 3.50, orderQty: 0, isSpecial: false },
-            { id: 61, name: "Frozen Mathenga Vanpayar Curry", category: "INCOMING MID JULY", weight: "350g", cartonQty: 18, price: 3.50, orderQty: 0, isSpecial: false },
-            { id: 62, name: "Frozen Sambar Mix", category: "INCOMING MID JULY", weight: "400g", cartonQty: 18, price: 3.50, orderQty: 0, isSpecial: false },
-            { id: 63, name: "Frozen Chinese Potato", category: "INCOMING MID JULY", weight: "400g", cartonQty: 18, price: 3.99, orderQty: 0, isSpecial: false },
-            { id: 64, name: "Frozen Sweet Porotta", category: "INCOMING MID JULY", weight: "450g", cartonQty: 10, price: 4.95, orderQty: 0, isSpecial: false },
-            { id: 65, name: "Frozen Parippuvada", category: "INCOMING MID JULY", weight: "350g", cartonQty: 16, price: 3.95, orderQty: 0, isSpecial: false },
-            { id: 66, name: "Frozen Jackfruit Unniyappam", category: "INCOMING MID JULY", weight: "350g", cartonQty: 16, price: 3.95, orderQty: 0, isSpecial: false },
-            { id: 67, name: "Frozen Banana Balls (FREE Chips)", category: "INCOMING MID JULY", weight: "350g", cartonQty: 16, price: 3.95, orderQty: 0, isSpecial: false },
-            { id: 68, name: "Frozen Uzunuvada (FREE chips)", category: "INCOMING MID JULY", weight: "350g", cartonQty: 16, price: 3.95, orderQty: 0, isSpecial: false },
-            { id: 69, name: "Raagi Stick", category: "INCOMING MID JULY", weight: "500g", cartonQty: 8, price: 3.20, orderQty: 0, isSpecial: false },
-            { id: 70, name: "Frozen Kaduk Mango Cut 1kg", category: "INCOMING MID JULY", weight: "1kg", cartonQty: 12, price: 7.95, orderQty: 0, isSpecial: false },
-            { id: 71, name: "Frozen Parippuvada 1kg", category: "INCOMING MID JULY", weight: "1kg", cartonQty: 12, price: 8.95, orderQty: 0, isSpecial: false },
-            { id: 72, name: "Frozen Ada Pradhaman 1kg", category: "INCOMING MID JULY", weight: "1kg", cartonQty: 12, price: 8.75, orderQty: 0, isSpecial: false },
-            { id: 73, name: "Frozen Sambar Curry 1kg", category: "INCOMING MID JULY", weight: "1kg", cartonQty: 12, price: 8.75, orderQty: 0, isSpecial: false },
-            { id: 74, name: "Frozen Aviyal Curry 1kg", category: "INCOMING MID JULY", weight: "1kg", cartonQty: 12, price: 8.75, orderQty: 0, isSpecial: false },
-            { id: 75, name: "Onam Sadhya 2 people Jacme Sadhya", category: "INCOMING MID JULY", weight: "2.5kg", cartonQty: 1, price: 26.50, orderQty: 0, isSpecial: true },
-            { id: 76, name: "Onam Sadhya 5 people Jacme Sadhya", category: "INCOMING MID JULY", weight: "5.5kg", cartonQty: 1, price: 49.50, orderQty: 0, isSpecial: true },
-            { id: 77, name: "Frozen Nool Porotta", category: "INCOMING MID JULY", weight: "1kg", cartonQty: 16, price: 6.50, orderQty: 0, isSpecial: false }
+            { id: 1, name: "Frozen Restaurant Porotta 1Kg", category: "FROZEN FAMILY PACK", weight: "1 kg", cartonQty: 16, price: 5.95, discount: 0, orderQty: 0, isSpecial: true },
+            { id: 2, name: "Frozen Restaurant Porotta 1.5Kg KD", category: "FROZEN FAMILY PACK", weight: "1.5 kg", cartonQty: 12, price: 8.8, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 3, name: "Frozen Restaurant Porotta 2Kg", category: "FROZEN FAMILY PACK", weight: "2 kg", cartonQty: 8, price: 11.7, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 4, name: "Frozen Steamed Banana 1Kg", category: "FROZEN FAMILY PACK", weight: "1kg", cartonQty: 14, price: 8.00, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 5, name: "Frozen Iidyappam White", category: "FROZEN FAMILY PACK", weight: "1kg", cartonQty: 8, price: 5.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 6, name: "Frozen Banana Fry 1Kg", category: "FROZEN FAMILY PACK", weight: "1kg", cartonQty: 12, price: 8.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 7, name: "Frozen Ripe Plantain Banana (Ethapazham)", category: "FROZEN FAMILY PACK", weight: "1kg", cartonQty: 14, price: 5.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 8, name: "Frozen Green Plantain Sliced", category: "FROZEN FAMILY PACK", weight: "1kg", cartonQty: 12, price: 6.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 9, name: "Frozen Chappathi 908g", category: "FROZEN FAMILY PACK", weight: "908g", cartonQty: 12, price: 5.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 10, name: "Frozen Tapioca Sliced 2kg", category: "FROZEN FAMILY PACK", weight: "2kg", cartonQty: 8, price: 5.99, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 11, name: "Frozen Chakka Puzhukk Tender Mango", category: "FROZEN SNACKS", weight: "350g", cartonQty: 18, price: 3.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 12, name: "Frozen Tapioca With Chutney", category: "FROZEN SNACKS", weight: "350g", cartonQty: 18, price: 2.99, discount: 0, orderQty: 0, isSpecial: true },
+            { id: 13, name: "Frozen Elayada Jaggery", category: "FROZEN SNACKS", weight: "350g", cartonQty: 16, price: 3.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 14, name: "Frozen Bonda", category: "FROZEN SNACKS", weight: "350g", cartonQty: 16, price: 3.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 15, name: "Frozen Laddu", category: "FROZEN SNACKS", weight: "350g", cartonQty: 16, price: 3.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 16, name: "Frozebn Jilebi", category: "FROZEN SNACKS", weight: "250g", cartonQty: 16, price: 3.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 17, name: "Frozen Chakka Ada", category: "FROZEN SNACKS", weight: "350g", cartonQty: 16, price: 3.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 18, name: "Frozen Ripe Jackfruit", category: "FROZEN SNACKS", weight: "300g", cartonQty: 18, price: 3.50, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 19, name: "Frozen Veg Baby Samosa (New Item)", category: "FROZEN SNACKS", weight: "350g", cartonQty: 16, price: 3.50, discount: 0, orderQty: 0, isSpecial: true },
+            { id: 20, name: "Frozen Vattayappam", category: "FROZEN SNACKS", weight: "350g", cartonQty: 16, price: 3.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 21, name: "Frozen Chakka Puttu", category: "FROZEN SNACKS", weight: "400g", cartonQty: 15, price: 4.50, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 22, name: "Frzoen Malabar Porotta Roll (New Item)", category: "FROZEN SNACKS", weight: "600g", cartonQty: 12, price: 3.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 23, name: "Frozen Cut Coconut", category: "INCOMING MID JULY", weight: "400g", cartonQty: 32, price: 3.99, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 24, name: "Frozen Green Mango Cut", category: "FROZEN VEGES", weight: "400g", cartonQty: 18, price: 3.50, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 25, name: "Frozen Grated Coconut KD", category: "FROZEN VEGES", weight: "400g", cartonQty: 32, price: 3.99, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 26, name: "Frozen Aviyal Mix", category: "FROZEN VEGES", weight: "400g", cartonQty: 18, price: 3.50, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 27, name: "Frozen Veg Stew Mix with Free Cauliflower 400g", category: "FROZEN VEGES", weight: "400g", cartonQty: 18, price: 3.50, discount: 0, orderQty: 0, isSpecial: true },
+            { id: 28, name: "Frozen Shallots (Red Onions) KD", category: "FROZEN VEGES", weight: "400g", cartonQty: 12, price: 3.50, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 29, name: "Frozen Green Jackfruit Sliced KD", category: "FROZEN VEGES", weight: "400g", cartonQty: 12, price: 3.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 30, name: "Frozen Mambazha Pulisheri", category: "FROZEN CURRIES & COMBOS", weight: "454g", cartonQty: 18, price: 4.10, discount: 0, orderQty: 0, isSpecial: true },
+            { id: 31, name: "Frozen Angamaly Manga Curry", category: "FROZEN CURRIES & COMBOS", weight: "350g", cartonQty: 18, price: 3.80, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 32, name: "Frozen Kanji Combo", category: "FROZEN CURRIES & COMBOS", weight: "750g", cartonQty: 30, price: 5.20, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 33, name: "Frozen Palappam with Veg Stew", category: "FROZEN CURRIES & COMBOS", weight: "454g", cartonQty: 15, price: 3.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 34, name: "Frozen Pathiri with Veg Stew", category: "FROZEN CURRIES & COMBOS", weight: "454g", cartonQty: 15, price: 3.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 35, name: "Frozen Puttu with Kadala", category: "FROZEN CURRIES & COMBOS", weight: "599g", cartonQty: 15, price: 3.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 36, name: "Tender Mango Chutney", category: "FROZEN CURRIES & COMBOS", weight: "200g", cartonQty: 50, price: 2.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 37, name: "Tender Jackfruit Chutney", category: "FROZEN CURRIES & COMBOS", weight: "200g", cartonQty: 50, price: 2.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 38, name: "Vaduka Puli Lemon Chutney", category: "FROZEN CURRIES & COMBOS", weight: "200g", cartonQty: 50, price: 2.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 39, name: "Inchi Puli", category: "FROZEN CURRIES & COMBOS", weight: "200g", cartonQty: 50, price: 2.95, discount: 0, orderQty: 0, isSpecial: true },
+            { id: 40, name: "Banana Chips 300g Bottle KD", category: "JACME DRY PRODUCTS", weight: "300g", cartonQty: 24, price: 4.20, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 41, name: "Vaccum Fried Ripe Banana Chips", category: "INCOMING MID JULY", weight: "100g", cartonQty: 30, price: 2.99, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 42, name: "Vaccum Fried Ripe Jackfruit Chips", category: "INCOMING MID JULY", weight: "100g", cartonQty: 25, price: 3.60, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 43, name: "Ooty Varkey", category: "INCOMING MID JULY", weight: "350g", cartonQty: 12, price: 3.85, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 44, name: "Pakkavada", category: "INCOMING MID JULY", weight: "200g", cartonQty: 20, price: 2.30, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 45, name: "Ripe Banana Chips Long Cut", category: "INCOMING MID JULY", weight: "150g", cartonQty: 20, price: 2.60, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 46, name: "Banana Chips Long Cut", category: "INCOMING MID JULY", weight: "200g", cartonQty: 24, price: 2.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 47, name: "Banana Chips (Salty) 300G", category: "INCOMING MID JULY", weight: "300g", cartonQty: 24, price: 4.20, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 48, name: "Banana Chips (Salty) 800G", category: "INCOMING MID JULY", weight: "800g", cartonQty: 8, price: 10.50, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 49, name: "Payyoli Mixture", category: "INCOMING MID JULY", weight: "400g", cartonQty: 25, price: 4.99, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 50, name: "Madhura Seva", category: "INCOMING MID JULY", weight: "300g", cartonQty: 25, price: 3.40, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 51, name: "Tomato Murukku", category: "INCOMING MID JULY", weight: "200g", cartonQty: 25, price: 3.30, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 52, name: "Sarkaravaratty", category: "INCOMING MID JULY", weight: "200g", cartonQty: 25, price: 2.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 53, name: "Achappam", category: "INCOMING MID JULY", weight: "200g", cartonQty: 30, price: 3.50, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 54, name: "Rice Muruku", category: "INCOMING MID JULY", weight: "200g", cartonQty: 25, price: 2.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 55, name: "Baby Murukku", category: "INCOMING MID JULY", weight: "200g", cartonQty: 25, price: 2.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 56, name: "Frozen Pavakka Thoran", category: "INCOMING MID JULY", weight: "350g", cartonQty: 18, price: 3.50, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 57, name: "Frozen Idichakka Thoran", category: "INCOMING MID JULY", weight: "350g", cartonQty: 18, price: 3.50, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 58, name: "Frozen Breadfruit", category: "INCOMING MID JULY", weight: "400g", cartonQty: 18, price: 3.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 59, name: "Frozen Fried Rice with Gopi Manchurian", category: "INCOMING MID JULY", weight: "454g", cartonQty: 15, price: 3.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 60, name: "Frozen Koorka Mezhukkupuratty", category: "INCOMING MID JULY", weight: "350g", cartonQty: 18, price: 3.50, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 61, name: "Frozen Mathenga Vanpayar Curry", category: "INCOMING MID JULY", weight: "350g", cartonQty: 18, price: 3.50, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 62, name: "Frozen Sambar Mix", category: "INCOMING MID JULY", weight: "400g", cartonQty: 18, price: 3.50, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 63, name: "Frozen Chinese Potato", category: "INCOMING MID JULY", weight: "400g", cartonQty: 18, price: 3.99, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 64, name: "Frozen Sweet Porotta", category: "INCOMING MID JULY", weight: "450g", cartonQty: 10, price: 4.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 65, name: "Frozen Parippuvada", category: "INCOMING MID JULY", weight: "350g", cartonQty: 16, price: 3.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 66, name: "Frozen Jackfruit Unniyappam", category: "INCOMING MID JULY", weight: "350g", cartonQty: 16, price: 3.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 67, name: "Frozen Banana Balls (FREE Chips)", category: "INCOMING MID JULY", weight: "350g", cartonQty: 16, price: 3.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 68, name: "Frozen Uzunuvada (FREE chips)", category: "INCOMING MID JULY", weight: "350g", cartonQty: 16, price: 3.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 69, name: "Raagi Stick", category: "INCOMING MID JULY", weight: "500g", cartonQty: 8, price: 3.20, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 70, name: "Frozen Kaduk Mango Cut 1kg", category: "INCOMING MID JULY", weight: "1kg", cartonQty: 12, price: 7.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 71, name: "Frozen Parippuvada 1kg", category: "INCOMING MID JULY", weight: "1kg", cartonQty: 12, price: 8.95, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 72, name: "Frozen Ada Pradhaman 1kg", category: "INCOMING MID JULY", weight: "1kg", cartonQty: 12, price: 8.75, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 73, name: "Frozen Sambar Curry 1kg", category: "INCOMING MID JULY", weight: "1kg", cartonQty: 12, price: 8.75, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 74, name: "Frozen Aviyal Curry 1kg", category: "INCOMING MID JULY", weight: "1kg", cartonQty: 12, price: 8.75, discount: 0, orderQty: 0, isSpecial: false },
+            { id: 75, name: "Onam Sadhya 2 people Jacme Sadhya", category: "INCOMING MID JULY", weight: "2.5kg", cartonQty: 1, price: 26.50, discount: 0, orderQty: 0, isSpecial: true },
+            { id: 76, name: "Onam Sadhya 5 people Jacme Sadhya", category: "INCOMING MID JULY", weight: "5.5kg", cartonQty: 1, price: 49.50, discount: 0, orderQty: 0, isSpecial: true },
+            { id: 77, name: "Frozen Nool Porotta", category: "INCOMING MID JULY", weight: "1kg", cartonQty: 16, price: 6.50, discount: 0, orderQty: 0, isSpecial: false }
         ];
 
         let products = [...defaultProducts];
+
+        // Toggle Order Mode View
+        function toggleOrderMode() {
+            isOrderMode = !isOrderMode;
+            const btn = document.getElementById('orderModeBtn');
+            const proformaBtn = document.getElementById('proformaBtn');
+
+            if (isOrderMode) {
+                btn.innerHTML = "❌ Close Order Mode";
+                btn.className = "col-span-2 sm:col-span-1 bg-slate-800 hover:bg-slate-900 text-white font-black px-3 py-2.5 rounded-xl text-xs sm:text-sm shadow-md transition cursor-pointer flex items-center justify-center gap-1.5";
+                proformaBtn.classList.remove('hidden');
+                proformaBtn.classList.add('flex');
+            } else {
+                btn.innerHTML = "🛒 Create New Order";
+                btn.className = "col-span-2 sm:col-span-1 bg-amber-300 hover:bg-amber-400 text-emerald-950 font-black px-3 py-2.5 rounded-xl text-xs sm:text-sm shadow-md transition cursor-pointer flex items-center justify-center gap-1.5";
+                proformaBtn.classList.add('hidden');
+                proformaBtn.classList.remove('flex');
+            }
+
+            // Toggle visibility of order-specific columns
+            document.querySelectorAll('.order-col').forEach(el => {
+                if (isOrderMode) {
+                    el.classList.remove('hidden');
+                } else {
+                    el.classList.add('hidden');
+                }
+            });
+
+            renderTable();
+        }
 
         async function loadInventoryFromCloud() {
             try {
@@ -241,6 +287,7 @@
                         weight: item.weight || '',
                         cartonQty: Number(item.cartonQty) || 0,
                         price: Number(item.price) || 0,
+                        discount: Number(item.discount) || 0,
                         orderQty: Number(item.orderQty) || 0,
                         isSpecial: String(item.isSpecial).toLowerCase() === 'true'
                     }));
@@ -345,6 +392,8 @@
             const tbody = document.getElementById('productTableBody');
             tbody.innerHTML = '';
 
+            const colSpanCount = isOrderMode ? 11 : 8;
+
             allCategories.forEach((currentCategory) => {
                 let catItems = products.filter(p => p.category === currentCategory);
                 if (categoryVisibility[currentCategory] === undefined) {
@@ -355,16 +404,17 @@
                 const catRow = document.createElement('tr');
                 catRow.className = "bg-slate-100 text-xs text-slate-700 font-bold";
                 catRow.innerHTML = `
-                    <td colspan="9" class="py-2.5 px-4 border-y border-slate-200">
+                    <td colspan="${colSpanCount}" class="py-2.5 px-4 border-y border-slate-200">
                         <div class="flex items-center justify-between w-full">
                             <div class="flex items-center gap-3">
                                 <span class="text-slate-400 font-medium">Group:</span>
-                                <input type="text" value="${currentCategory}" onchange="editCategoryGroupName('${currentCategory}', this.value)" class="bg-transparent font-black text-emerald-900 py-0.5 px-1 rounded w-64 focus:outline-none focus:border-emerald-700 border-b border-transparent hover:border-slate-400">
+                                <input type="text" value="${currentCategory}" onchange="editCategoryGroupName('${currentCategory}', this.value)" class="bg-transparent font-black text-emerald-900 py-0.5 px-1 rounded w-48 sm:w-64 focus:outline-none focus:border-emerald-700 border-b border-transparent hover:border-slate-400">
                             </div>
                             <div class="flex items-center gap-2 bg-white px-3 py-1 rounded-md shadow-2xs border border-slate-200">
                                 <label class="flex items-center gap-2 text-[11px] font-bold text-slate-600 uppercase cursor-pointer select-none">
                                     <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCategoryVisibility('${currentCategory}', this.checked)" class="accent-emerald-700 rounded h-3.5 w-3.5">
-                                    Include in Print Catalogue
+                                    <span class="hidden sm:inline">Include in Print Catalogue</span>
+                                    <span class="sm:hidden">Print</span>
                                 </label>
                             </div>
                         </div>
@@ -375,7 +425,7 @@
                 if (!isChecked) {
                     const hiddenNoticeRow = document.createElement('tr');
                     hiddenNoticeRow.className = "bg-slate-50/50 italic text-slate-400 text-xs";
-                    hiddenNoticeRow.innerHTML = `<td colspan="9" class="py-2 px-8 text-left">⚠️ Group hidden — excluded from catalogue exports.</td>`;
+                    hiddenNoticeRow.innerHTML = `<td colspan="${colSpanCount}" class="py-2 px-8 text-left">⚠️ Group hidden — excluded from catalogue exports.</td>`;
                     tbody.appendChild(hiddenNoticeRow);
                     return;
                 }
@@ -384,6 +434,8 @@
                     let catOptions = allCategories.map(cat => 
                         `<option value="${cat}" ${product.category === cat ? 'selected' : ''}>${cat}</option>`
                     ).join('');
+
+                    const discountedPrice = product.price * (1 - (product.discount || 0) / 100);
 
                     const row = document.createElement('tr');
                     row.className = product.isSpecial 
@@ -400,45 +452,66 @@
                         <td class="py-2 px-1 text-center">
                             <button onclick="toggleSpecial(${product.id})" class="text-lg ${product.isSpecial ? 'text-amber-500 scale-110' : 'text-slate-300 hover:text-amber-400'} cursor-pointer">★</button>
                         </td>
-                        <td class="py-2 px-4 font-semibold text-slate-900">
+                        <td class="py-2 px-3 sm:px-4 font-semibold text-slate-900">
                             <input type="text" value="${product.name}" onchange="updateProduct(${product.id}, 'name', this.value)" class="w-full bg-transparent border-b border-transparent hover:border-slate-300 focus:border-emerald-600 focus:outline-none py-0.5 rounded">
                         </td>
-                        <td class="py-2 px-4">
-                            <select onchange="updateProduct(${product.id}, 'category', this.value); renderTable();" class="bg-white border border-slate-200 text-xs rounded-md px-1.5 py-0.5 text-slate-700">
+                        <td class="py-2 px-3 sm:px-4">
+                            <select onchange="updateProduct(${product.id}, 'category', this.value); renderTable();" class="bg-white border border-slate-200 text-xs rounded-md px-1.5 py-0.5 text-slate-700 w-full">
                                 ${catOptions}
                             </select>
                         </td>
-                        <td class="py-2 px-4 text-center">
-                            <input type="text" value="${product.weight}" onchange="updateProduct(${product.id}, 'weight', this.value)" class="w-16 bg-transparent border-b border-transparent hover:border-slate-300 text-center focus:outline-none py-0.5 rounded">
+                        <td class="py-2 px-2 sm:px-4 text-center">
+                            <input type="text" value="${product.weight}" onchange="updateProduct(${product.id}, 'weight', this.value)" class="w-14 sm:w-16 bg-transparent border-b border-transparent hover:border-slate-300 text-center focus:outline-none py-0.5 rounded">
                         </td>
-                        <td class="py-2 px-4 text-center">
-                            <input type="number" value="${product.cartonQty}" onchange="updateProduct(${product.id}, 'cartonQty', this.value)" class="w-12 bg-transparent border-b border-transparent hover:border-slate-300 text-center focus:outline-none py-0.5 rounded">
+                        <td class="py-2 px-2 sm:px-4 text-center">
+                            <input type="number" value="${product.cartonQty}" onchange="updateProduct(${product.id}, 'cartonQty', this.value)" class="w-10 sm:w-12 bg-transparent border-b border-transparent hover:border-slate-300 text-center focus:outline-none py-0.5 rounded">
                         </td>
-                        <td class="py-2 px-4">
-                            <div class="relative flex items-center max-w-[100px]">
+                        <td class="py-2 px-3 sm:px-4">
+                            <div class="relative flex items-center max-w-[90px] sm:max-w-[100px]">
                                 <span class="absolute left-1.5 text-slate-400 font-bold text-xs">$</span>
                                 <input type="number" step="0.01" value="${product.price.toFixed(2)}" onchange="updateProduct(${product.id}, 'price', this.value)" class="w-full bg-white border border-slate-200 focus:outline-none pl-4 pr-1 py-0.5 rounded text-sm font-bold">
                             </div>
                         </td>
-                        <td class="py-2 px-4 text-center bg-emerald-50/50">
-                            <input type="number" min="0" value="${product.orderQty}" onchange="updateProduct(${product.id}, 'orderQty', this.value)" class="w-16 bg-white border border-emerald-200 text-center focus:outline-none py-1 rounded font-black text-emerald-900">
+                        <td class="order-col ${isOrderMode ? '' : 'hidden'} py-2 px-1 text-center bg-amber-50">
+                            <div class="relative flex items-center justify-center">
+                                <input type="number" min="0" max="100" step="1" value="${product.discount || 0}" onchange="updateProduct(${product.id}, 'discount', this.value)" class="w-12 bg-white border border-amber-300 text-center focus:outline-none py-0.5 rounded font-bold text-amber-950 text-xs">
+                                <span class="text-amber-700 font-bold text-xs ml-0.5">%</span>
+                            </div>
                         </td>
-                        <td class="py-2 px-4 text-center">
+                        <td class="order-col ${isOrderMode ? '' : 'hidden'} py-2 px-2 text-center bg-amber-50/50">
+                            <span class="font-black text-amber-900 text-xs">$${discountedPrice.toFixed(2)}</span>
+                        </td>
+                        <td class="order-col ${isOrderMode ? '' : 'hidden'} py-2 px-2 text-center bg-emerald-50/50">
+                            <input type="number" min="0" value="${product.orderQty}" onchange="updateProduct(${product.id}, 'orderQty', this.value)" class="w-14 bg-white border border-emerald-200 text-center focus:outline-none py-1 rounded font-black text-emerald-900">
+                        </td>
+                        <td class="py-2 px-2 text-center">
                             <button onclick="deleteProduct(${product.id})" class="text-rose-400 hover:text-rose-600 p-1 rounded transition cursor-pointer">✕</button>
                         </td>
                     `;
                     tbody.appendChild(row);
                 });
             });
+
+            // Keep column headers synced
+            document.querySelectorAll('.order-col').forEach(el => {
+                if (isOrderMode) {
+                    el.classList.remove('hidden');
+                } else {
+                    el.classList.add('hidden');
+                }
+            });
         }
 
         function updateProduct(id, field, value) {
             const index = products.findIndex(p => p.id === id);
             if (index !== -1) {
-                if (field === 'price' || field === 'cartonQty' || field === 'orderQty') {
+                if (field === 'price' || field === 'cartonQty' || field === 'orderQty' || field === 'discount') {
                     products[index][field] = parseFloat(value) || 0;
                 } else {
                     products[index][field] = value;
+                }
+                if (field === 'price' || field === 'discount') {
+                    renderTable();
                 }
             }
         }
@@ -453,7 +526,7 @@
 
         function addNewProduct() {
             const newId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
-            products.unshift({ id: newId, name: "New Custom Entry Item", category: allCategories[0], weight: "1kg", cartonQty: 12, price: 0.00, orderQty: 0, isSpecial: false });
+            products.unshift({ id: newId, name: "New Custom Entry Item", category: allCategories[0], weight: "1kg", cartonQty: 12, price: 0.00, discount: 0, orderQty: 0, isSpecial: false });
             renderTable();
         }
 
@@ -585,6 +658,93 @@
                 
                 dispatchDiv.innerHTML = html;
                 printContent.appendChild(dispatchDiv);
+
+            } else if (mode === 'proforma') {
+                scopeBadge.innerText = "Proforma Statement";
+                titleHeader.innerText = "Proforma Invoice";
+                footerNotice.innerText = "This is a Proforma Quote. Payment instructions will follow upon final order confirmation.";
+
+                let orderItems = products.filter(p => p.orderQty > 0);
+                if (orderItems.length === 0) {
+                    alert("Please enter Order Quantity for at least one item before printing a Proforma.");
+                    return;
+                }
+
+                let proformaDiv = document.createElement('div');
+                let grandTotalInclGST = 0;
+
+                let clientDisplayHtml = clientNameValue 
+                    ? `<div class="text-sm font-black text-slate-900">Billed To: <span class="text-emerald-800 text-base underline decoration-amber-400 decoration-2 underline-offset-4">${clientNameValue}</span></div>` 
+                    : `<div class="text-xs font-bold text-slate-400 italic">Billed To: General Account / Walk-in Customer</div>`;
+
+                let html = `
+                    <div class="border border-slate-200 rounded-xl p-4 mb-6 bg-slate-50 flex flex-col sm:flex-row justify-between sm:items-center gap-2 text-xs">
+                        ${clientDisplayHtml}
+                        <div class="text-left sm:text-right font-medium text-slate-600">
+                            <p class="font-bold text-slate-900">Invoice Ref: PF-${Math.floor(100000 + Math.random() * 900000)}</p>
+                            <p>Terms: Wholesale Wholesale Delivery</p>
+                        </div>
+                    </div>
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="border-b-2 border-slate-300 font-bold text-slate-600 uppercase tracking-widest text-[9px] bg-slate-100">
+                                <th class="py-2.5 pl-2">Product Description</th>
+                                <th class="py-2.5 w-20 text-right pr-2">Base Price</th>
+                                <th class="py-2.5 w-16 text-center">Disc %</th>
+                                <th class="py-2.5 w-20 text-right pr-2">Net Price</th>
+                                <th class="py-2.5 w-16 text-center">Qty</th>
+                                <th class="py-2.5 w-24 text-right pr-2">Total (Incl GST)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200 text-slate-800">
+                `;
+
+                orderItems.forEach(item => {
+                    const discount = item.discount || 0;
+                    const netPrice = item.price * (1 - discount / 100);
+                    const lineTotal = netPrice * item.orderQty;
+                    grandTotalInclGST += lineTotal;
+
+                    html += `
+                        <tr>
+                            <td class="py-2.5 pl-2 font-bold text-slate-900">${item.name}</td>
+                            <td class="py-2.5 text-right pr-2 text-slate-500">$${item.price.toFixed(2)}</td>
+                            <td class="py-2.5 text-center font-semibold text-amber-700">${discount > 0 ? discount + '%' : '-'}</td>
+                            <td class="py-2.5 text-right pr-2 font-bold text-slate-800">$${netPrice.toFixed(2)}</td>
+                            <td class="py-2.5 text-center font-black bg-slate-50">${item.orderQty}</td>
+                            <td class="py-2.5 text-right pr-2 font-black text-emerald-900">$${lineTotal.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+
+                // Calculate GST components (15% inclusive NZ calculation)
+                const gstPortion = grandTotalInclGST * (3 / 23);
+                const subtotalExclGST = grandTotalInclGST - gstPortion;
+
+                html += `
+                    </tbody>
+                </table>
+
+                <div class="mt-8 flex justify-end">
+                    <div class="w-full sm:w-72 bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-2 text-xs">
+                        <div class="flex justify-between text-slate-600 font-medium">
+                            <span>Subtotal (Excl. GST):</span>
+                            <span>$${subtotalExclGST.toFixed(2)}</span>
+                        </div>
+                        <div class="flex justify-between text-slate-600 font-medium">
+                            <span>Includes GST (15%):</span>
+                            <span>$${gstPortion.toFixed(2)}</span>
+                        </div>
+                        <div class="border-t border-slate-300 pt-2 flex justify-between text-sm font-black text-emerald-950">
+                            <span>Total Payable (Incl. GST):</span>
+                            <span class="text-base text-emerald-900">$${grandTotalInclGST.toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+                `;
+
+                proformaDiv.innerHTML = html;
+                printContent.appendChild(proformaDiv);
             }
 
             dashboard.classList.add('hidden');
