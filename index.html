@@ -701,7 +701,10 @@
                 orderItems.forEach(item => {
                     const discount = item.discount || 0;
                     const netPrice = item.price * (1 - discount / 100);
-                    const lineTotal = netPrice * item.orderQty;
+                    const cartonQty = item.cartonQty || 1;
+                    
+                    // Wholesale calculation: Discounted Price * Carton Qty * Order Qty
+                    const lineTotal = netPrice * cartonQty * item.orderQty;
                     grandTotalInclGST += lineTotal;
 
                     html += `
@@ -710,7 +713,7 @@
                             <td class="py-2.5 text-right pr-2 text-slate-500">$${item.price.toFixed(2)}</td>
                             <td class="py-2.5 text-center font-semibold text-amber-700">${discount > 0 ? discount + '%' : '-'}</td>
                             <td class="py-2.5 text-right pr-2 font-bold text-slate-800">$${netPrice.toFixed(2)}</td>
-                            <td class="py-2.5 text-center font-black bg-slate-50">${item.orderQty}</td>
+                            <td class="py-2.5 text-center font-black bg-slate-50">${item.orderQty} ctn</td>
                             <td class="py-2.5 text-right pr-2 font-black text-emerald-900">$${lineTotal.toFixed(2)}</td>
                         </tr>
                     `;
