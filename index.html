@@ -56,7 +56,7 @@
                     🛒 Create New Order
                 </button>
                 <button onclick="saveCurrentOrderToList()" id="saveOrderBtn" class="hidden col-span-2 sm:col-span-1 bg-emerald-400 hover:bg-emerald-500 text-emerald-950 font-black px-3 py-2.5 rounded-xl text-xs sm:text-sm shadow-md transition cursor-pointer flex items-center justify-center gap-1.5">
-                    💾 Save Order
+                    💾 Save Order to Cloud
                 </button>
                 <button onclick="addNewProduct()" class="bg-emerald-800 hover:bg-emerald-900 text-emerald-50 border border-emerald-700 font-bold px-3 py-2 rounded-xl text-xs sm:text-sm transition cursor-pointer">
                     + Add Product
@@ -79,31 +79,68 @@
             </div>
         </header>
 
-        <!-- Dynamic Group Manager & Client Inputs -->
-        <div class="bg-white rounded-xl p-4 sm:p-5 mb-4 sm:mb-6 shadow-xs border border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-            <div class="space-y-1.5">
-                <label for="clientNameInput" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Client / Account Name (Optional)</label>
-                <input type="text" id="clientNameInput" placeholder="Type customer name for dispatch/proforma..." class="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 sm:py-2.5 text-sm focus:outline-none focus:border-emerald-600 w-full font-semibold text-slate-800">
+        <!-- PAGE NAVIGATION TABS -->
+        <div class="flex border-b border-slate-200 mb-6 gap-2">
+            <button id="navTabInventory" onclick="switchPage('inventory')" class="bg-white text-emerald-900 border-t-2 border-emerald-700 font-extrabold px-5 py-2.5 rounded-t-xl text-xs sm:text-sm shadow-xs transition cursor-pointer">
+                📦 Master Inventory
+            </button>
+            <button id="navTabOrders" onclick="switchPage('orders')" class="bg-slate-200 text-slate-600 font-bold px-5 py-2.5 rounded-t-xl text-xs sm:text-sm hover:bg-slate-300 transition cursor-pointer flex items-center gap-2">
+                <span>📋 Daily Orders Queue</span>
+                <span id="orderCountBadge" class="bg-emerald-700 text-white font-black text-[10px] px-2 py-0.5 rounded-full">0</span>
+            </button>
+        </div>
+
+        <!-- PAGE 1: MASTER INVENTORY VIEW -->
+        <div id="pageInventory" class="space-y-4">
+            <!-- Dynamic Group Manager & Client Inputs -->
+            <div class="bg-white rounded-xl p-4 sm:p-5 shadow-xs border border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <div class="space-y-1.5">
+                    <label for="clientNameInput" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Client / Account Name (Optional)</label>
+                    <input type="text" id="clientNameInput" placeholder="Type customer name for dispatch/proforma..." class="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 sm:py-2.5 text-sm focus:outline-none focus:border-emerald-600 w-full font-semibold text-slate-800">
+                </div>
+
+                <div class="space-y-1.5">
+                    <label for="newCategoryInput" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Create New Category Group</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="newCategoryInput" placeholder="Enter new group title..." class="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 sm:py-2.5 text-sm focus:outline-none focus:border-emerald-600 w-full font-medium">
+                        <button onclick="addCustomCategory()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-4 py-2 rounded-xl transition cursor-pointer whitespace-nowrap">
+                            Create Group
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <div class="space-y-1.5">
-                <label for="newCategoryInput" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Create New Category Group</label>
-                <div class="flex gap-2">
-                    <input type="text" id="newCategoryInput" placeholder="Enter new group title..." class="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 sm:py-2.5 text-sm focus:outline-none focus:border-emerald-600 w-full font-medium">
-                    <button onclick="addCustomCategory()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-4 py-2 rounded-xl transition cursor-pointer whitespace-nowrap">
-                        Create Group
-                    </button>
+            <!-- Master Working Inventory Table -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[700px]">
+                        <thead>
+                            <tr id="tableHeaderRow" class="bg-slate-50 border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-500">
+                                <th class="py-3 sm:py-4 px-2 sm:px-3 w-10 text-center">Move</th>
+                                <th class="py-3 sm:py-4 px-2 w-10 text-center">Promo</th>
+                                <th class="py-3 sm:py-4 px-3 sm:px-4">Product Description</th>
+                                <th class="py-3 sm:py-4 px-3 sm:px-4 w-36 sm:w-44">Category Group</th>
+                                <th class="py-3 sm:py-4 px-2 sm:px-4 w-20 sm:w-24 text-center">Weight</th>
+                                <th class="py-3 sm:py-4 px-2 sm:px-4 w-20 sm:w-24 text-center">Carton Qty</th>
+                                <th class="py-3 sm:py-4 px-3 sm:px-4 w-28 sm:w-32">Price (Incl. GST)</th>
+                                <th class="order-col hidden py-3 sm:py-4 px-2 w-20 text-center bg-amber-100/70 text-amber-950 font-black">Disc %</th>
+                                <th class="order-col hidden py-3 sm:py-4 px-3 w-28 text-center bg-amber-50 text-amber-900 font-black">Net Price</th>
+                                <th class="order-col hidden py-3 sm:py-4 px-3 w-24 text-center bg-emerald-100 text-emerald-950 font-black">Order Qty</th>
+                                <th class="py-3 sm:py-4 px-2 sm:px-4 w-10 text-center">Drop</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTableBody" class="divide-y divide-slate-100 text-sm"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <!-- DAILY ORDERS MANAGEMENT SECTION -->
-        <div class="bg-white rounded-2xl p-4 sm:p-6 mb-6 shadow-sm border border-slate-200">
+        <!-- PAGE 2: SEPARATE DAILY ORDERS QUEUE PAGE -->
+        <div id="pageOrders" class="hidden bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200">
             <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
                 <div class="flex items-center gap-2">
-                    <span class="text-lg">📋</span>
-                    <h2 class="text-lg font-bold text-slate-800">Daily Orders Queue</h2>
-                    <span id="orderCountBadge" class="bg-emerald-100 text-emerald-900 font-bold text-xs px-2.5 py-0.5 rounded-full">0 Orders</span>
+                    <span class="text-xl">📋</span>
+                    <h2 class="text-lg font-bold text-slate-800">Saved Orders Queue (Synced with Cloud)</h2>
                 </div>
                 <button onclick="clearAllOrders()" class="text-xs text-rose-500 hover:text-rose-700 font-semibold transition cursor-pointer">
                     Clear Day Queue
@@ -111,33 +148,10 @@
             </div>
 
             <div id="ordersListContainer" class="space-y-3">
-                <p class="text-xs text-slate-400 italic text-center py-4">No active orders saved for today yet. Use "🛒 Create New Order" to build and save orders here.</p>
+                <p class="text-xs text-slate-400 italic text-center py-4">Loading saved orders from Google Sheets...</p>
             </div>
         </div>
 
-        <!-- Master Working Inventory Table -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse min-w-[700px]">
-                    <thead>
-                        <tr id="tableHeaderRow" class="bg-slate-50 border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-500">
-                            <th class="py-3 sm:py-4 px-2 sm:px-3 w-10 text-center">Move</th>
-                            <th class="py-3 sm:py-4 px-2 w-10 text-center">Promo</th>
-                            <th class="py-3 sm:py-4 px-3 sm:px-4">Product Description</th>
-                            <th class="py-3 sm:py-4 px-3 sm:px-4 w-36 sm:w-44">Category Group</th>
-                            <th class="py-3 sm:py-4 px-2 sm:px-4 w-20 sm:w-24 text-center">Weight</th>
-                            <th class="py-3 sm:py-4 px-2 sm:px-4 w-20 sm:w-24 text-center">Carton Qty</th>
-                            <th class="py-3 sm:py-4 px-3 sm:px-4 w-28 sm:w-32">Price (Incl. GST)</th>
-                            <th class="order-col hidden py-3 sm:py-4 px-2 w-20 text-center bg-amber-100/70 text-amber-950 font-black">Disc %</th>
-                            <th class="order-col hidden py-3 sm:py-4 px-3 w-28 text-center bg-amber-50 text-amber-900 font-black">Net Price</th>
-                            <th class="order-col hidden py-3 sm:py-4 px-3 w-24 text-center bg-emerald-100 text-emerald-950 font-black">Order Qty</th>
-                            <th class="py-3 sm:py-4 px-2 sm:px-4 w-10 text-center">Drop</th>
-                        </tr>
-                    </thead>
-                    <tbody id="productTableBody" class="divide-y divide-slate-100 text-sm"></tbody>
-                </table>
-            </div>
-        </div>
     </div>
 
     <!-- PRINT VIEW TEMPLATE -->
@@ -170,7 +184,7 @@
         const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbwJZiIegQuXIuKttHNfEUwxzLFUQjJZthEB6NgOpcLF_hnyXTJBu__Njr0nPr050Ug3/exec";
 
         let isOrderMode = false;
-        let activeOrders = JSON.parse(localStorage.getItem('kt_active_orders') || '[]');
+        let activeOrders = [];
 
         let allCategories = [
             "FROZEN FAMILY PACK",
@@ -266,6 +280,30 @@
 
         let products = [...defaultProducts];
 
+        // SWITCH VIEW BETWEEN INVENTORY & ORDERS QUEUE
+        function switchPage(page) {
+            const pageInv = document.getElementById('pageInventory');
+            const pageOrd = document.getElementById('pageOrders');
+            const tabInv = document.getElementById('navTabInventory');
+            const tabOrd = document.getElementById('navTabOrders');
+
+            if (page === 'inventory') {
+                pageInv.classList.remove('hidden');
+                pageOrd.classList.add('hidden');
+                
+                tabInv.className = "bg-white text-emerald-900 border-t-2 border-emerald-700 font-extrabold px-5 py-2.5 rounded-t-xl text-xs sm:text-sm shadow-xs transition cursor-pointer";
+                tabOrd.className = "bg-slate-200 text-slate-600 font-bold px-5 py-2.5 rounded-t-xl text-xs sm:text-sm hover:bg-slate-300 transition cursor-pointer flex items-center gap-2";
+            } else if (page === 'orders') {
+                pageInv.classList.add('hidden');
+                pageOrd.classList.remove('hidden');
+
+                tabOrd.className = "bg-white text-emerald-900 border-t-2 border-emerald-700 font-extrabold px-5 py-2.5 rounded-t-xl text-xs sm:text-sm shadow-xs transition cursor-pointer flex items-center gap-2";
+                tabInv.className = "bg-slate-200 text-slate-600 font-bold px-5 py-2.5 rounded-t-xl text-xs sm:text-sm hover:bg-slate-300 transition cursor-pointer";
+                
+                loadOrdersFromCloud();
+            }
+        }
+
         function toggleOrderMode() {
             isOrderMode = !isOrderMode;
             const btn = document.getElementById('orderModeBtn');
@@ -297,8 +335,8 @@
             renderTable();
         }
 
-        // SAVE ORDER TO DAILY QUEUE
-        function saveCurrentOrderToList() {
+        // SAVE ORDER TO GOOGLE SHEETS
+        async function saveCurrentOrderToList() {
             const clientName = document.getElementById('clientNameInput').value.trim() || 'General Customer';
             const orderItems = products.filter(p => p.orderQty > 0).map(p => ({ ...p }));
 
@@ -317,35 +355,67 @@
                 id: 'ORD-' + Date.now().toString().slice(-6),
                 clientName: clientName,
                 date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                status: 'Pending', // Pending, Dispatched, Complete
+                status: 'Pending',
                 totalCartons: totalCartons,
                 totalValue: totalValue,
                 items: orderItems
             };
 
             activeOrders.unshift(newOrder);
-            persistOrders();
-            renderOrdersList();
 
-            // Reset current form inputs
+            const saveBtn = document.getElementById('saveOrderBtn');
+            saveBtn.innerText = "⏳ Saving...";
+            saveBtn.disabled = true;
+
+            await pushOrdersToCloud();
+
+            saveBtn.innerText = "💾 Save Order to Cloud";
+            saveBtn.disabled = false;
+
+            // Reset local table order quantities
             products.forEach(p => p.orderQty = 0);
             document.getElementById('clientNameInput').value = '';
             renderTable();
 
-            alert(`Order ${newOrder.id} saved to Daily Queue!`);
+            alert(`Order ${newOrder.id} saved to Google Sheets Orders Queue!`);
         }
 
-        function persistOrders() {
-            localStorage.setItem('kt_active_orders', JSON.stringify(activeOrders));
+        async function pushOrdersToCloud() {
+            try {
+                await fetch(GOOGLE_SHEET_API, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify({ action: "saveOrders", orders: activeOrders })
+                });
+            } catch (err) {
+                console.error("Error saving orders to cloud:", err);
+            }
+        }
+
+        async function loadOrdersFromCloud() {
+            const container = document.getElementById('ordersListContainer');
+            container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Loading saved orders from Google Sheets...</p>`;
+
+            try {
+                const response = await fetch(`${GOOGLE_SHEET_API}?action=getOrders`);
+                const data = await response.json();
+                if (Array.isArray(data)) {
+                    activeOrders = data;
+                }
+            } catch (err) {
+                console.error("Error fetching orders from cloud:", err);
+            } finally {
+                renderOrdersList();
+            }
         }
 
         function renderOrdersList() {
             const container = document.getElementById('ordersListContainer');
             const badge = document.getElementById('orderCountBadge');
-            badge.innerText = `${activeOrders.length} Order${activeOrders.length === 1 ? '' : 's'}`;
+            badge.innerText = activeOrders.length;
 
             if (activeOrders.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">No active orders saved for today yet. Use "🛒 Create New Order" to build and save orders here.</p>`;
+                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">No active orders saved in Google Sheets. Use "🛒 Create New Order" to build and save orders.</p>`;
                 return;
             }
 
@@ -408,62 +478,55 @@
             });
         }
 
-        function updateOrderStatus(orderIndex, newStatus) {
+        async function updateOrderStatus(orderIndex, newStatus) {
             activeOrders[orderIndex].status = newStatus;
-            persistOrders();
             renderOrdersList();
+            await pushOrdersToCloud();
         }
 
-        function updateOrderItemQty(orderIndex, itemIndex, newQty) {
+        async function updateOrderItemQty(orderIndex, itemIndex, newQty) {
             const qty = parseInt(newQty) || 0;
             activeOrders[orderIndex].items[itemIndex].orderQty = qty;
             
-            // Recalculate totals
             activeOrders[orderIndex].totalCartons = activeOrders[orderIndex].items.reduce((sum, i) => sum + i.orderQty, 0);
             activeOrders[orderIndex].totalValue = activeOrders[orderIndex].items.reduce((sum, item) => {
                 const netPrice = item.price * (1 - (item.discount || 0) / 100);
                 return sum + (netPrice * (item.cartonQty || 1) * item.orderQty);
             }, 0);
 
-            persistOrders();
             renderOrdersList();
+            await pushOrdersToCloud();
         }
 
-        function deleteOrderFromQueue(index) {
-            if (confirm("Remove this order from today's list?")) {
+        async function deleteOrderFromQueue(index) {
+            if (confirm("Remove this order from Google Sheets queue?")) {
                 activeOrders.splice(index, 1);
-                persistOrders();
                 renderOrdersList();
+                await pushOrdersToCloud();
             }
         }
 
-        function clearAllOrders() {
-            if (confirm("Clear all orders from today's list?")) {
+        async function clearAllOrders() {
+            if (confirm("Clear all orders from Google Sheets queue?")) {
                 activeOrders = [];
-                persistOrders();
                 renderOrdersList();
+                await pushOrdersToCloud();
             }
         }
 
         function printOrderDoc(orderIndex, docType) {
             const savedOrder = activeOrders[orderIndex];
-            
-            // Temporarily set document inputs to match saved order
             document.getElementById('clientNameInput').value = savedOrder.clientName;
             
-            // Backup active master inventory order quantities
             const originalMasterQuantities = products.map(p => p.orderQty);
 
-            // Map saved order quantities into master table state
             products.forEach(p => {
                 const foundItem = savedOrder.items.find(item => item.id === p.id);
                 p.orderQty = foundItem ? foundItem.orderQty : 0;
             });
 
-            // Trigger PDF export
             generatePDF(docType);
 
-            // Restore original master inventory state
             products.forEach((p, idx) => p.orderQty = originalMasterQuantities[idx]);
         }
 
@@ -895,7 +958,6 @@
                     const netPrice = item.price * (1 - discount / 100);
                     const cartonQty = item.cartonQty || 1;
                     
-                    // Wholesale calculation: Discounted Price * Carton Qty * Order Qty
                     const lineTotal = netPrice * cartonQty * item.orderQty;
                     grandTotalInclGST += lineTotal;
 
@@ -952,8 +1014,8 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             renderTable();
-            renderOrdersList();
             loadInventoryFromCloud();
+            loadOrdersFromCloud();
         });
     </script>
 </body>
