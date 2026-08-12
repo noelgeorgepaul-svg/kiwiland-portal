@@ -28,7 +28,7 @@
         }
 
         /* Mobile touch improvements */
-        input, select, button {
+        input, select, button, textarea {
             touch-action: manipulation;
         }
     </style>
@@ -55,6 +55,9 @@
                 <button onclick="toggleOrderMode()" id="orderModeBtn" class="col-span-2 sm:col-span-1 bg-amber-300 hover:bg-amber-400 text-emerald-950 font-black px-3 py-2.5 rounded-xl text-xs sm:text-sm shadow-md transition cursor-pointer flex items-center justify-center gap-1.5">
                     🛒 Create New Order
                 </button>
+                <button onclick="saveCurrentOrderToList()" id="saveOrderBtn" class="hidden col-span-2 sm:col-span-1 bg-emerald-400 hover:bg-emerald-500 text-emerald-950 font-black px-3 py-2.5 rounded-xl text-xs sm:text-sm shadow-md transition cursor-pointer flex items-center justify-center gap-1.5">
+                    💾 Save Order
+                </button>
                 <button onclick="addNewProduct()" class="bg-emerald-800 hover:bg-emerald-900 text-emerald-50 border border-emerald-700 font-bold px-3 py-2 rounded-xl text-xs sm:text-sm transition cursor-pointer">
                     + Add Product
                 </button>
@@ -71,7 +74,7 @@
                 <div class="h-6 w-px bg-emerald-700 mx-1 hidden sm:block"></div>
 
                 <button id="saveCloudBtn" onclick="syncToCloud()" class="col-span-2 sm:col-span-1 bg-amber-500 hover:bg-amber-600 text-emerald-950 font-black px-4 py-2.5 rounded-xl text-xs sm:text-sm transition shadow-md cursor-pointer text-center">
-                    💾 Save to Google Sheets
+                    💾 Save Master Sheet
                 </button>
             </div>
         </header>
@@ -91,6 +94,24 @@
                         Create Group
                     </button>
                 </div>
+            </div>
+        </div>
+
+        <!-- DAILY ORDERS MANAGEMENT SECTION -->
+        <div class="bg-white rounded-2xl p-4 sm:p-6 mb-6 shadow-sm border border-slate-200">
+            <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-lg">📋</span>
+                    <h2 class="text-lg font-bold text-slate-800">Daily Orders Queue</h2>
+                    <span id="orderCountBadge" class="bg-emerald-100 text-emerald-900 font-bold text-xs px-2.5 py-0.5 rounded-full">0 Orders</span>
+                </div>
+                <button onclick="clearAllOrders()" class="text-xs text-rose-500 hover:text-rose-700 font-semibold transition cursor-pointer">
+                    Clear Day Queue
+                </button>
+            </div>
+
+            <div id="ordersListContainer" class="space-y-3">
+                <p class="text-xs text-slate-400 italic text-center py-4">No active orders saved for today yet. Use "🛒 Create New Order" to build and save orders here.</p>
             </div>
         </div>
 
@@ -149,6 +170,7 @@
         const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbwJZiIegQuXIuKttHNfEUwxzLFUQjJZthEB6NgOpcLF_hnyXTJBu__Njr0nPr050Ug3/exec";
 
         let isOrderMode = false;
+        let activeOrders = JSON.parse(localStorage.getItem('kt_active_orders') || '[]');
 
         let allCategories = [
             "FROZEN FAMILY PACK",
@@ -162,7 +184,6 @@
         let categoryVisibility = {};
         allCategories.forEach(cat => { categoryVisibility[cat] = true; });
 
-        // Default products array with discount column support
         let defaultProducts = [
             { id: 1, name: "Frozen Restaurant Porotta 1Kg", category: "FROZEN FAMILY PACK", weight: "1 kg", cartonQty: 16, price: 5.95, discount: 0, orderQty: 0, isSpecial: true },
             { id: 2, name: "Frozen Restaurant Porotta 1.5Kg KD", category: "FROZEN FAMILY PACK", weight: "1.5 kg", cartonQty: 12, price: 8.8, discount: 0, orderQty: 0, isSpecial: false },
@@ -245,25 +266,26 @@
 
         let products = [...defaultProducts];
 
-        // Toggle Order Mode View
         function toggleOrderMode() {
             isOrderMode = !isOrderMode;
             const btn = document.getElementById('orderModeBtn');
+            const saveOrderBtn = document.getElementById('saveOrderBtn');
             const proformaBtn = document.getElementById('proformaBtn');
 
             if (isOrderMode) {
                 btn.innerHTML = "❌ Close Order Mode";
                 btn.className = "col-span-2 sm:col-span-1 bg-slate-800 hover:bg-slate-900 text-white font-black px-3 py-2.5 rounded-xl text-xs sm:text-sm shadow-md transition cursor-pointer flex items-center justify-center gap-1.5";
+                saveOrderBtn.classList.remove('hidden');
                 proformaBtn.classList.remove('hidden');
                 proformaBtn.classList.add('flex');
             } else {
                 btn.innerHTML = "🛒 Create New Order";
                 btn.className = "col-span-2 sm:col-span-1 bg-amber-300 hover:bg-amber-400 text-emerald-950 font-black px-3 py-2.5 rounded-xl text-xs sm:text-sm shadow-md transition cursor-pointer flex items-center justify-center gap-1.5";
+                saveOrderBtn.classList.add('hidden');
                 proformaBtn.classList.add('hidden');
                 proformaBtn.classList.remove('flex');
             }
 
-            // Toggle visibility of order-specific columns
             document.querySelectorAll('.order-col').forEach(el => {
                 if (isOrderMode) {
                     el.classList.remove('hidden');
@@ -273,6 +295,176 @@
             });
 
             renderTable();
+        }
+
+        // SAVE ORDER TO DAILY QUEUE
+        function saveCurrentOrderToList() {
+            const clientName = document.getElementById('clientNameInput').value.trim() || 'General Customer';
+            const orderItems = products.filter(p => p.orderQty > 0).map(p => ({ ...p }));
+
+            if (orderItems.length === 0) {
+                alert("Please enter Order Quantity for at least one item before saving an order.");
+                return;
+            }
+
+            const totalCartons = orderItems.reduce((sum, item) => sum + item.orderQty, 0);
+            const totalValue = orderItems.reduce((sum, item) => {
+                const netPrice = item.price * (1 - (item.discount || 0) / 100);
+                return sum + (netPrice * (item.cartonQty || 1) * item.orderQty);
+            }, 0);
+
+            const newOrder = {
+                id: 'ORD-' + Date.now().toString().slice(-6),
+                clientName: clientName,
+                date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                status: 'Pending', // Pending, Dispatched, Complete
+                totalCartons: totalCartons,
+                totalValue: totalValue,
+                items: orderItems
+            };
+
+            activeOrders.unshift(newOrder);
+            persistOrders();
+            renderOrdersList();
+
+            // Reset current form inputs
+            products.forEach(p => p.orderQty = 0);
+            document.getElementById('clientNameInput').value = '';
+            renderTable();
+
+            alert(`Order ${newOrder.id} saved to Daily Queue!`);
+        }
+
+        function persistOrders() {
+            localStorage.setItem('kt_active_orders', JSON.stringify(activeOrders));
+        }
+
+        function renderOrdersList() {
+            const container = document.getElementById('ordersListContainer');
+            const badge = document.getElementById('orderCountBadge');
+            badge.innerText = `${activeOrders.length} Order${activeOrders.length === 1 ? '' : 's'}`;
+
+            if (activeOrders.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">No active orders saved for today yet. Use "🛒 Create New Order" to build and save orders here.</p>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            activeOrders.forEach((order, index) => {
+                let statusColor = 'bg-amber-100 text-amber-900 border-amber-300';
+                if (order.status === 'Dispatched') statusColor = 'bg-blue-100 text-blue-900 border-blue-300';
+                if (order.status === 'Complete') statusColor = 'bg-emerald-100 text-emerald-900 border-emerald-300';
+
+                const card = document.createElement('div');
+                card.className = "bg-slate-50 border border-slate-200 rounded-xl p-3 sm:p-4 text-xs space-y-3";
+                
+                card.innerHTML = `
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-2">
+                        <div>
+                            <span class="font-black text-slate-900 text-sm">${order.clientName}</span>
+                            <span class="text-slate-400 text-[10px] ml-2">(${order.id} • ${order.date})</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 rounded-full font-bold text-[10px] border ${statusColor}">${order.status}</span>
+                            <select onchange="updateOrderStatus(${index}, this.value)" class="bg-white border border-slate-200 rounded px-1.5 py-0.5 text-[11px] font-bold text-slate-700">
+                                <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                <option value="Dispatched" ${order.status === 'Dispatched' ? 'selected' : ''}>Dispatched</option>
+                                <option value="Complete" ${order.status === 'Complete' ? 'selected' : ''}>Complete</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Items Pick List -->
+                    <div class="space-y-1.5 pl-1">
+                        ${order.items.map((item, itemIdx) => `
+                            <div class="flex items-center justify-between text-slate-700">
+                                <span class="font-semibold text-slate-900 truncate pr-2">${item.name} (${item.weight})</span>
+                                <div class="flex items-center gap-1.5 shrink-0">
+                                    <span class="text-[10px] text-slate-400">Picked (ctn):</span>
+                                    <input type="number" min="0" value="${item.orderQty}" onchange="updateOrderItemQty(${index}, ${itemIdx}, this.value)" class="w-12 bg-white border border-slate-300 rounded text-center font-bold py-0.5 focus:border-emerald-600 focus:outline-none">
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-between pt-2 border-t border-slate-200 text-slate-600 font-medium gap-2">
+                        <div>
+                            Total Volume: <span class="font-black text-slate-900">${order.totalCartons} Cartons</span> | Total: <span class="font-black text-emerald-900">$${order.totalValue.toFixed(2)}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="printOrderDoc(${index}, 'dispatch')" class="bg-white hover:bg-slate-100 text-emerald-900 border border-slate-300 font-bold px-2 py-1 rounded text-[11px] transition">
+                                🚚 Print Slip
+                            </button>
+                            <button onclick="printOrderDoc(${index}, 'proforma')" class="bg-emerald-800 hover:bg-emerald-900 text-white font-bold px-2 py-1 rounded text-[11px] transition">
+                                🧾 Print Proforma
+                            </button>
+                            <button onclick="deleteOrderFromQueue(${index})" class="text-rose-500 hover:text-rose-700 font-bold px-1 py-1 text-xs">
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function updateOrderStatus(orderIndex, newStatus) {
+            activeOrders[orderIndex].status = newStatus;
+            persistOrders();
+            renderOrdersList();
+        }
+
+        function updateOrderItemQty(orderIndex, itemIndex, newQty) {
+            const qty = parseInt(newQty) || 0;
+            activeOrders[orderIndex].items[itemIndex].orderQty = qty;
+            
+            // Recalculate totals
+            activeOrders[orderIndex].totalCartons = activeOrders[orderIndex].items.reduce((sum, i) => sum + i.orderQty, 0);
+            activeOrders[orderIndex].totalValue = activeOrders[orderIndex].items.reduce((sum, item) => {
+                const netPrice = item.price * (1 - (item.discount || 0) / 100);
+                return sum + (netPrice * (item.cartonQty || 1) * item.orderQty);
+            }, 0);
+
+            persistOrders();
+            renderOrdersList();
+        }
+
+        function deleteOrderFromQueue(index) {
+            if (confirm("Remove this order from today's list?")) {
+                activeOrders.splice(index, 1);
+                persistOrders();
+                renderOrdersList();
+            }
+        }
+
+        function clearAllOrders() {
+            if (confirm("Clear all orders from today's list?")) {
+                activeOrders = [];
+                persistOrders();
+                renderOrdersList();
+            }
+        }
+
+        function printOrderDoc(orderIndex, docType) {
+            const savedOrder = activeOrders[orderIndex];
+            
+            // Temporarily set document inputs to match saved order
+            document.getElementById('clientNameInput').value = savedOrder.clientName;
+            
+            // Backup active master inventory order quantities
+            const originalMasterQuantities = products.map(p => p.orderQty);
+
+            // Map saved order quantities into master table state
+            products.forEach(p => {
+                const foundItem = savedOrder.items.find(item => item.id === p.id);
+                p.orderQty = foundItem ? foundItem.orderQty : 0;
+            });
+
+            // Trigger PDF export
+            generatePDF(docType);
+
+            // Restore original master inventory state
+            products.forEach((p, idx) => p.orderQty = originalMasterQuantities[idx]);
         }
 
         async function loadInventoryFromCloud() {
@@ -311,7 +503,7 @@
                     headers: { "Content-Type": "text/plain" },
                     body: JSON.stringify(products)
                 });
-                alert("Inventory saved to Google Sheets successfully!");
+                alert("Master Inventory saved to Google Sheets successfully!");
             } catch (error) {
                 console.error("Error saving to cloud:", error);
                 alert("Failed to save updates to Google Sheets.");
@@ -451,9 +643,10 @@
                         </td>
                         <td class="py-2 px-1 text-center">
                             <button onclick="toggleSpecial(${product.id})" class="text-lg ${product.isSpecial ? 'text-amber-500 scale-110' : 'text-slate-300 hover:text-amber-400'} cursor-pointer">★</button>
+                        </td>
                         <td class="py-2 px-3 sm:px-4 font-semibold text-slate-900 min-w-[200px] sm:min-w-[260px]">
-    <textarea rows="2" onchange="updateProduct(${product.id}, 'name', this.value)" class="w-full bg-transparent border-b border-transparent hover:border-slate-300 focus:border-emerald-600 focus:outline-none py-0.5 rounded text-xs sm:text-sm resize-none leading-snug">${product.name}</textarea>
-</td>
+                            <textarea rows="2" onchange="updateProduct(${product.id}, 'name', this.value)" class="w-full bg-transparent border-b border-transparent hover:border-slate-300 focus:border-emerald-600 focus:outline-none py-0.5 rounded text-xs sm:text-sm resize-none leading-snug">${product.name}</textarea>
+                        </td>
                         <td class="py-2 px-3 sm:px-4">
                             <select onchange="updateProduct(${product.id}, 'category', this.value); renderTable();" class="bg-white border border-slate-200 text-xs rounded-md px-1.5 py-0.5 text-slate-700 w-full">
                                 ${catOptions}
@@ -491,7 +684,6 @@
                 });
             });
 
-            // Keep column headers synced
             document.querySelectorAll('.order-col').forEach(el => {
                 if (isOrderMode) {
                     el.classList.remove('hidden');
@@ -719,7 +911,6 @@
                     `;
                 });
 
-                // Calculate GST components (15% inclusive NZ calculation)
                 const gstPortion = grandTotalInclGST * (3 / 23);
                 const subtotalExclGST = grandTotalInclGST - gstPortion;
 
@@ -759,9 +950,9 @@
             document.getElementById('printContainer').classList.add('hidden');
         }
 
-        // Initialize table on DOM load
         window.addEventListener('DOMContentLoaded', () => {
             renderTable();
+            renderOrdersList();
             loadInventoryFromCloud();
         });
     </script>
