@@ -181,7 +181,7 @@
     </div>
 
     <script>
-        const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbwbAEqTAeiERWP3Ae5kespWtQZk958fJ2tbfms_FyjYpz1E122eaLlqw8F56TcjK0ek/exec";
+        const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbwJZiIegQuXIuKttHNfEUwxzLFUQjJZthEB6NgOpcLF_hnyXTJBu__Njr0nPr050Ug3/exec";
 
         let isOrderMode = false;
         let activeOrders = [];
@@ -399,9 +399,16 @@
 
             try {
                 const response = await fetch(`${GOOGLE_SHEET_API}?action=getOrders`);
-                const data = await response.json();
+                let data = await response.json();
+                
+                if (typeof data === 'string') {
+                    data = JSON.parse(data);
+                }
+                
                 if (Array.isArray(data)) {
-                    activeOrders = data;
+                    activeOrders = data.map(order => {
+                        return typeof order === 'string' ? JSON.parse(order) : order;
+                    });
                 }
             } catch (err) {
                 console.error("Error fetching orders from cloud:", err);
