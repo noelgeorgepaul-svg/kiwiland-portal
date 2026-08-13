@@ -181,7 +181,7 @@
     </div>
 
     <script>
-        const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbwdLI4YVPMdB4vcGbKaRDOJwqiBjc997fRLBQ2RKCyZC92MwlA5appGKXzp24m4DNj3/exec";
+        const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbwJZiIegQuXIuKttHNfEUwxzLFUQjJZthEB6NgOpcLF_hnyXTJBu__Njr0nPr050Ug3/exec";
 
         let isOrderMode = false;
         let activeOrders = [];
@@ -355,7 +355,8 @@
                 id: 'ORD-' + Date.now().toString().slice(-6),
                 clientName: clientName,
                 date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                status: 'Pending',
+                status: 'Pending', // Pending, Palletted, Delivered
+                notes: '', // Editable Notes Field
                 totalCartons: totalCartons,
                 totalValue: totalValue,
                 items: orderItems
@@ -422,8 +423,8 @@
             container.innerHTML = '';
             activeOrders.forEach((order, index) => {
                 let statusColor = 'bg-amber-100 text-amber-900 border-amber-300';
-                if (order.status === 'Dispatched') statusColor = 'bg-blue-100 text-blue-900 border-blue-300';
-                if (order.status === 'Complete') statusColor = 'bg-emerald-100 text-emerald-900 border-emerald-300';
+                if (order.status === 'Palletted') statusColor = 'bg-blue-100 text-blue-900 border-blue-300';
+                if (order.status === 'Delivered') statusColor = 'bg-emerald-100 text-emerald-900 border-emerald-300';
 
                 const card = document.createElement('div');
                 card.className = "bg-slate-50 border border-slate-200 rounded-xl p-3 sm:p-4 text-xs space-y-3";
@@ -435,11 +436,11 @@
                             <span class="text-slate-400 text-[10px] ml-2">(${order.id} • ${order.date})</span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="px-2 py-0.5 rounded-full font-bold text-[10px] border ${statusColor}">${order.status}</span>
+                            <span class="px-2 py-0.5 rounded-full font-bold text-[10px] border ${statusColor}">${order.status || 'Pending'}</span>
                             <select onchange="updateOrderStatus(${index}, this.value)" class="bg-white border border-slate-200 rounded px-1.5 py-0.5 text-[11px] font-bold text-slate-700">
                                 <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                                <option value="Dispatched" ${order.status === 'Dispatched' ? 'selected' : ''}>Dispatched</option>
-                                <option value="Complete" ${order.status === 'Complete' ? 'selected' : ''}>Complete</option>
+                                <option value="Palletted" ${order.status === 'Palletted' ? 'selected' : ''}>Palletted</option>
+                                <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
                             </select>
                         </div>
                     </div>
@@ -455,6 +456,12 @@
                                 </div>
                             </div>
                         `).join('')}
+                    </div>
+
+                    <!-- Order Notes / Custom Items Field -->
+                    <div class="pt-1">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Order Notes / Delivery Additions:</label>
+                        <textarea rows="2" placeholder="Type new items added, delivery instructions, or notes..." onchange="updateOrderNotes(${index}, this.value)" class="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-600 resize-none">${order.notes || ''}</textarea>
                     </div>
 
                     <div class="flex flex-wrap items-center justify-between pt-2 border-t border-slate-200 text-slate-600 font-medium gap-2">
@@ -481,6 +488,11 @@
         async function updateOrderStatus(orderIndex, newStatus) {
             activeOrders[orderIndex].status = newStatus;
             renderOrdersList();
+            await pushOrdersToCloud();
+        }
+
+        async function updateOrderNotes(orderIndex, newNotes) {
+            activeOrders[orderIndex].notes = newNotes;
             await pushOrdersToCloud();
         }
 
@@ -525,7 +537,7 @@
                 p.orderQty = foundItem ? foundItem.orderQty : 0;
             });
 
-            generatePDF(docType);
+            generatePDF(docType, savedOrder.notes);
 
             products.forEach((p, idx) => p.orderQty = originalMasterQuantities[idx]);
         }
@@ -789,7 +801,7 @@
             renderTable();
         }
 
-        function generatePDF(mode) {
+        function generatePDF(mode, customNotes = '') {
             const dashboard = document.getElementById('dashboard');
             const printContainer = document.getElementById('printContainer');
             const printContent = document.getElementById('printContent');
@@ -867,14 +879,22 @@
                     ? `<div class="text-sm font-black text-slate-900">Account Client: <span class="text-emerald-800 text-base underline decoration-amber-400 decoration-2 underline-offset-4">${clientNameValue}</span></div>` 
                     : `<div class="text-xs font-bold text-slate-400 italic">Account Client: Walk-in / Unspecified Store Contract</div>`;
 
+                let notesDisplayHtml = customNotes ? `
+                    <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs">
+                        <span class="font-bold text-amber-950">Delivery Notes / Special Additions:</span>
+                        <p class="text-slate-800 whitespace-pre-wrap mt-0.5">${customNotes}</p>
+                    </div>
+                ` : '';
+
                 let html = `
-                    <div class="border border-slate-200 rounded-xl p-4 mb-6 bg-slate-50 flex flex-col sm:flex-row justify-between sm:items-center gap-2 text-xs">
+                    <div class="border border-slate-200 rounded-xl p-4 mb-4 bg-slate-50 flex flex-col sm:flex-row justify-between sm:items-center gap-2 text-xs">
                         ${clientDisplayHtml}
                         <div class="text-left sm:text-right font-medium text-slate-500">
                             <p>Manifest Ref: KL-${Math.floor(100000 + Math.random() * 900000)}</p>
                         </div>
                     </div>
-                    <table class="w-full text-left border-collapse text-xs">
+                    ${notesDisplayHtml}
+                    <table class="w-full text-left border-collapse text-xs mt-4">
                         <thead>
                             <tr class="border-b border-slate-300 font-bold text-slate-500 uppercase tracking-widest text-[9px]">
                                 <th class="py-2 pl-2">Ordered Product Item Description</th>
@@ -931,15 +951,23 @@
                     ? `<div class="text-sm font-black text-slate-900">Billed To: <span class="text-emerald-800 text-base underline decoration-amber-400 decoration-2 underline-offset-4">${clientNameValue}</span></div>` 
                     : `<div class="text-xs font-bold text-slate-400 italic">Billed To: General Account / Walk-in Customer</div>`;
 
+                let notesDisplayHtml = customNotes ? `
+                    <div class="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs">
+                        <span class="font-bold text-slate-900">Invoice Notes:</span>
+                        <p class="text-slate-700 whitespace-pre-wrap mt-0.5">${customNotes}</p>
+                    </div>
+                ` : '';
+
                 let html = `
-                    <div class="border border-slate-200 rounded-xl p-4 mb-6 bg-slate-50 flex flex-col sm:flex-row justify-between sm:items-center gap-2 text-xs">
+                    <div class="border border-slate-200 rounded-xl p-4 mb-4 bg-slate-50 flex flex-col sm:flex-row justify-between sm:items-center gap-2 text-xs">
                         ${clientDisplayHtml}
                         <div class="text-left sm:text-right font-medium text-slate-600">
                             <p class="font-bold text-slate-900">Invoice Ref: PF-${Math.floor(100000 + Math.random() * 900000)}</p>
-                            <p>Terms: Wholesale Wholesale Delivery</p>
+                            <p>Terms: Wholesale Delivery</p>
                         </div>
                     </div>
-                    <table class="w-full text-left border-collapse text-xs">
+                    ${notesDisplayHtml}
+                    <table class="w-full text-left border-collapse text-xs mt-4">
                         <thead>
                             <tr class="border-b-2 border-slate-300 font-bold text-slate-600 uppercase tracking-widest text-[9px] bg-slate-100">
                                 <th class="py-2.5 pl-2">Product Description</th>
