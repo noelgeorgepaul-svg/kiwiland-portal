@@ -181,7 +181,7 @@
     </div>
 
     <script>
-        const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbzBYQ0jPK15vO0pTMywItP4i-usGq61HdcKKfieYAKEwy2ua278s-cTayxUBDQgmtDE/exec";
+        const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbyNSgBnM3X9Pv9ayT359BKQIUbAwPofuU5DzBROgJMKZNHYi9VMkBZhpCLJzEub5acT/exec";
 
         let isOrderMode = false;
         let activeOrders = [];
@@ -356,7 +356,7 @@
                 clientName: clientName,
                 date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 status: 'Pending', // Pending, Palletted, Delivered
-                notes: '', // Editable Notes Field
+                notes: '',
                 totalCartons: totalCartons,
                 totalValue: totalValue,
                 items: orderItems
