@@ -231,51 +231,6 @@
         let categoryVisibility = {};
         allCategories.forEach(cat => { categoryVisibility[cat] = true; });
 
-        // Backup products array ONLY used if Google Sheets is completely empty or fails to connect
-        let defaultProducts = [
-            { id: 1, name: "Frozen Restaurant Porotta 1Kg", weight: "1 kg", cartonQty: 16, price: 5.95, category: "FROZEN FAMILY PACK", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 2, name: "Frozen Restaurant Porotta 2Kg", weight: "2 kg", cartonQty: 8, price: 11.70, category: "FROZEN FAMILY PACK", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 3, name: "Frozen Banana Fry 1Kg", weight: "1kg", cartonQty: 12, price: 8.95, category: "FROZEN FAMILY PACK", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 4, name: "Frozen Tapioca Sliced 2kg", weight: "2kg", cartonQty: 8, price: 5.99, category: "FROZEN FAMILY PACK", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 5, name: "Frozen Nool Porotta", weight: "1kg", cartonQty: 16, price: 6.50, category: "FROZEN FAMILY PACK", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 6, name: "Frozen Tapioca With Chutney", weight: "350g", cartonQty: 18, price: 2.99, category: "FROZEN SNACKS", discount: 0, orderQty: 0, isSpecial: true },
-            { id: 7, name: "Frozen Sweet Porotta", weight: "450g", cartonQty: 10, price: 4.95, category: "FROZEN SNACKS", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 8, name: "Frozen Grated Coconut KD", weight: "400g", cartonQty: 32, price: 3.99, category: "FROZEN VEGES", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 9, name: "Frozen Cut Coconut", weight: "400g", cartonQty: 32, price: 3.99, category: "FROZEN VEGES", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 10, name: "Frozen Green Mango Cut", weight: "400g", cartonQty: 18, price: 3.50, category: "FROZEN VEGES", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 11, name: "Frozen Aviyal Mix", weight: "400g", cartonQty: 18, price: 3.50, category: "FROZEN VEGES", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 12, name: "Frozen Shallots (Red Onions) KD", weight: "400g", cartonQty: 12, price: 3.50, category: "FROZEN VEGES", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 13, name: "Frozen Green Jackfruit Sliced KD", weight: "400g", cartonQty: 12, price: 3.95, category: "FROZEN VEGES", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 14, name: "Frozen Kanji Combo", weight: "750g", cartonQty: 30, price: 5.20, category: "FROZEN CURRIES & COMBOS", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 15, name: "Frozen Pathiri with Veg Stew", weight: "454g", cartonQty: 15, price: 3.95, category: "FROZEN CURRIES & COMBOS", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 16, name: "Vaduka Puli Lemon Chutney", weight: "200g", cartonQty: 50, price: 2.95, category: "FROZEN CURRIES & COMBOS", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 17, name: "Achappam", weight: "200g", cartonQty: 30, price: 3.50, category: "JACME DRY PRODUCTS", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 18, name: "Vaccum Fried Ripe Banana Chips", weight: "100g", cartonQty: 30, price: 2.99, category: "JACME DRY PRODUCTS", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 19, name: "Ooty Varkey", weight: "350g", cartonQty: 12, price: 3.85, category: "JACME DRY PRODUCTS", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 20, name: "Pakkavada", weight: "200g", cartonQty: 20, price: 2.30, category: "JACME DRY PRODUCTS", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 21, name: "Banana Chips Long Cut", weight: "200g", cartonQty: 24, price: 2.95, category: "JACME DRY PRODUCTS", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 22, name: "Banana Chips (Salty) 300G", weight: "300g", cartonQty: 24, price: 4.20, category: "JACME DRY PRODUCTS", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 23, name: "Banana Chips (Salty) 800G", weight: "800g", cartonQty: 8, price: 10.50, category: "JACME DRY PRODUCTS", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 24, name: "Payyoli Mixture", weight: "400g", cartonQty: 25, price: 4.99, category: "JACME DRY PRODUCTS", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 25, name: "Tomato Murukku", weight: "350g", cartonQty: 25, price: 3.30, category: "JACME DRY PRODUCTS", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 26, name: "Rice Muruku", weight: "300g", cartonQty: 25, price: 2.95, category: "JACME DRY PRODUCTS", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 27, name: "Baby Murukku", weight: "300g", cartonQty: 25, price: 2.95, category: "JACME DRY PRODUCTS", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 28, name: "Vacuum Fried Jackfruit Chips", weight: "100g", cartonQty: 25, price: 3.60, category: "ON WATER - ETA OCT 20", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 29, name: "Frozen Tender Mango Chutney 200g", weight: "200g", cartonQty: 40, price: 2.95, category: "ON WATER - ETA OCT 20", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 30, name: "Plum Cake 700g", weight: "700g", cartonQty: 16, price: 8.95, category: "ON WATER - ETA OCT 20", discount: 0, orderQty: 0, isSpecial: true },
-            { id: 31, name: "Pappadavada", weight: "200g", cartonQty: 24, price: 2.40, category: "ON WATER - ETA OCT 20", discount: 0, orderQty: 0, isSpecial: true },
-            { id: 32, name: "Frozen Neyyappam", weight: "1kg", cartonQty: 12, price: 8.95, category: "ON WATER - ETA OCT 20", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 33, name: "Kuzhalappam Sweet 200g", weight: "200g", cartonQty: 24, price: 3.20, category: "ON WATER - ETA OCT 20", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 34, name: "Jackfruit Chips 125g", weight: "125g", cartonQty: 40, price: 2.50, category: "ON WATER - ETA OCT 20", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 35, name: "Frozen Yam", weight: "400g", cartonQty: 18, price: 3.50, category: "ON WATER - ETA OCT 20", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 36, name: "Frozen Steamed Banana 1Kg", weight: "1kg", cartonQty: 14, price: 8.00, category: "ON WATER - ETA OCT 20", discount: 0, orderQty: 0, isSpecial: true },
-            { id: 37, name: "Frozen Uzhunnuvada", weight: "350g", cartonQty: 16, price: 3.95, category: "ON WATER - ETA OCT 20", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 38, name: "Frozen Unniyappam 1kg", weight: "1kg", cartonQty: 12, price: 8.95, category: "ON WATER - ETA OCT 20", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 39, name: "Frozen Unnakkaya (BUY 1 Get 1 FREE)", weight: "350g", cartonQty: 16, price: 3.95, category: "ON WATER - ETA OCT 20", discount: 0, orderQty: 0, isSpecial: true },
-            { id: 40, name: "Frozen Sambar Mix", weight: "400g", cartonQty: 18, price: 3.50, category: "ON WATER - ETA OCT 20", discount: 0, orderQty: 0, isSpecial: false },
-            { id: 41, name: "Dates & Nuts Cake 550g", weight: "550g", cartonQty: 16, price: 8.95, category: "ON WATER - ETA OCT 20", discount: 0, orderQty: 0, isSpecial: true }
-        ];
-
         let products = [];
 
         function sortColumn(key) {
@@ -321,13 +276,18 @@
                 for (let i = 1; i < lines.length; i++) {
                     const cols = lines[i].split(',').map(c => c.replace(/^["']|["']$/g, '').trim());
                     if (cols.length >= 4) {
+                        const cat = cols[4] || allCategories[0];
+                        if (!allCategories.includes(cat)) {
+                            allCategories.push(cat);
+                            categoryVisibility[cat] = true;
+                        }
                         newItems.push({
                             id: i,
                             name: cols[0] || 'Imported Product',
                             weight: cols[1] || '1kg',
                             cartonQty: parseInt(cols[2]) || 12,
                             price: parseFloat(cols[3]) || 0.00,
-                            category: cols[4] || allCategories[0],
+                            category: cat,
                             discount: 0,
                             orderQty: 0,
                             isSpecial: false
@@ -667,31 +627,65 @@
             products.forEach((p, idx) => p.orderQty = originalMasterQuantities[idx]);
         }
 
-        // Direct fetch from Google Sheets without rendering defaults first
+        // Always fetch exclusively from Google Sheets with no hardcoded fallback
         async function loadInventoryFromCloud() {
+            const tbody = document.getElementById('productTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="11" class="py-8 text-center text-slate-400 font-medium">
+                        ⏳ Syncing with Google Sheets database...
+                    </td>
+                </tr>
+            `;
+
             try {
-                const response = await fetch(GOOGLE_SHEET_API);
+                const response = await fetch(`${GOOGLE_SHEET_API}?t=${Date.now()}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error ${response.status}`);
+                }
+
                 const data = await response.json();
-                if (Array.isArray(data) && data.length > 0) {
-                    products = data.map(item => ({
-                        id: Number(item.id) || item.id,
+                if (!Array.isArray(data)) {
+                    throw new Error("Unexpected response format from Google Sheets.");
+                }
+
+                products = data.map((item, idx) => {
+                    const cat = (item.category || allCategories[0]).trim();
+                    if (cat && !allCategories.includes(cat)) {
+                        allCategories.push(cat);
+                        categoryVisibility[cat] = true;
+                    }
+                    return {
+                        id: Number(item.id) || (idx + 1),
                         name: item.name || '',
                         weight: item.weight || '',
                         cartonQty: Number(item.cartonQty) || 0,
                         price: Number(item.price) || 0,
-                        category: item.category || allCategories[0],
+                        category: cat,
                         discount: Number(item.discount) || 0,
                         orderQty: Number(item.orderQty) || 0,
                         isSpecial: String(item.isSpecial).toLowerCase() === 'true'
-                    }));
-                } else {
-                    products = [...defaultProducts];
-                }
-            } catch (error) {
-                console.error("Could not fetch cloud data, loading fallback array:", error);
-                products = [...defaultProducts];
-            } finally {
+                    };
+                });
+
                 renderTable();
+            } catch (error) {
+                console.error("Could not fetch cloud data:", error);
+                products = [];
+                const colSpanCount = isOrderMode ? 11 : 8;
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="${colSpanCount}" class="py-10 px-4 text-center">
+                            <div class="inline-block bg-rose-50 border border-rose-200 text-rose-800 rounded-xl p-4 max-w-md">
+                                <p class="font-bold text-sm mb-1">⚠️ Unable to load products from Google Sheets</p>
+                                <p class="text-xs text-rose-600 mb-3">${error.message}</p>
+                                <button onclick="loadInventoryFromCloud()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-4 py-2 rounded-lg transition cursor-pointer">
+                                    🔄 Retry Connection
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
             }
         }
 
@@ -702,15 +696,18 @@
             saveBtn.disabled = true;
 
             try {
-                await fetch(GOOGLE_SHEET_API, {
+                const response = await fetch(GOOGLE_SHEET_API, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain" },
                     body: JSON.stringify(products)
                 });
+                if (!response.ok) {
+                    throw new Error(`HTTP error ${response.status}`);
+                }
                 alert("Master Inventory saved to Google Sheets successfully!");
             } catch (error) {
                 console.error("Error saving to cloud:", error);
-                alert("Failed to save updates to Google Sheets.");
+                alert("Failed to save updates to Google Sheets. Check your Apps Script deployment.");
             } finally {
                 saveBtn.innerText = originalText;
                 saveBtn.disabled = false;
@@ -790,8 +787,21 @@
 
             const colSpanCount = isOrderMode ? 11 : 8;
 
+            if (products.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="${colSpanCount}" class="py-8 text-center text-slate-400 font-medium">
+                            No products found in Google Sheets. Click "+ Add Product" or import a CSV/PDF to get started.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
             allCategories.forEach((currentCategory) => {
                 let catItems = products.filter(p => p.category === currentCategory);
+                if (catItems.length === 0) return;
+
                 if (categoryVisibility[currentCategory] === undefined) {
                     categoryVisibility[currentCategory] = true;
                 }
